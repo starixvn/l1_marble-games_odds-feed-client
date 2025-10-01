@@ -9,3 +9,4 @@ variables:
   NPM_LANG_TS: "true"
   ENABLE_SONAR_CHECK: "true"
   ENABLE_TEST_JS: "true"
+  PUBLISH_NPM: "true"
