@@ -1,6 +1,6 @@
 {
     "name": "odd-feed-client",
-    "version": "0.0.0",
+    "version": "1.0.0",
     "description": "Event-based odd feed client",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -27,12 +27,20 @@
         }
     },
     "typesVersions": {
-        "*":{
-               "dependency-injection": ["lib/dependency-injection/index.d.ts"],
-               "awilix": ["lib/container/awilix/index.d.ts"],
-               "container": ["lib/container/core/index.d.ts"],
-               ".": ["lib/index.d.ts"]
-            }
+        "*": {
+            "dependency-injection": [
+                "lib/dependency-injection/index.d.ts"
+            ],
+            "awilix": [
+                "lib/container/awilix/index.d.ts"
+            ],
+            "container": [
+                "lib/container/core/index.d.ts"
+            ],
+            ".": [
+                "lib/index.d.ts"
+            ]
+        }
     },
     "engines": {
         "node": ">=18.0.0"
