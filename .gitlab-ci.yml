@@ -1,0 +1,20 @@
+include:
+  - project: ci/core-cicd
+    ref: main
+    file: luminet.gitlab-ci.yml
+
+variables:
+  NODEJS_IMAGE: $DOCKER_REG_LOCAL_URL/docker-hub/library/node:lts-slim
+  PUBLISH_NPM_IMAGE: $DOCKER_REG_LOCAL_URL/docker-hub/library/node:lts-slim
+  NPM_LANG_TS: "true"
+  
+.unit_test_js:
+  artifacts:
+    when: always
+    paths:
+      - ./**/lcov.info
+      - ./coverage
+    reports:
+      junit:
+        - ./coverage/unit-tests.xml
+    expire_in: 1 day
