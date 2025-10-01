@@ -85,12 +85,17 @@ const event = store.getEventByGameId("<game-id>", /* eventId */ 123456);
 
 ### Odd feed filter (container value)
 
-`OddFeedPullService` can take an optional predicate to decide which events to keep. Register a value named `oddFeedFilter` in your container. It receives an event and returns `true` to include it. If you don't register it, all events are included by default.
+`OddFeedPullService` can take an optional filter to decide which events to keep. Register a value named `oddFeedFilter` in your container. It can be either:
+
+- a function `(event) => boolean` (predicate), or
+- a boolean (`true` to include all, `false` to include none).
+
+If you don't register it, all events are included by default.
 
 ```ts
 // Keep all events (default behavior example)
 container.register({
-    oddFeedFilter: asValue((event) => true),
+    oddFeedFilter: asValue(true), // include all events
 });
 
 // Example: only include events for specific IDs
