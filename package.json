@@ -12,7 +12,7 @@
         },
         "./awilix": {
             "require": "./lib/container/awilix/index.js",
-            "import": "./lib/con    tainer/awilix/index.js",
+            "import": "./lib/container/awilix/index.js",
             "types": "./lib/container/awilix/index.d.ts"
         },
         "./container": {

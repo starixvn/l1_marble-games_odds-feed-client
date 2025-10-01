@@ -18,12 +18,16 @@ import { Event } from "@/domain";
 
 
 function register<TEvent extends Event = Event>(diContainer: DiContainer, {
-    oddFeedFilter = () => true,
+    oddFeedFilter = true,
 }: {
-    oddFeedFilter?: (event: TEvent) => boolean;
+    oddFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
 } = {
-    oddFeedFilter: () => true,
+    oddFeedFilter: true,
 }) {
+    const normalizedOddFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
+        typeof oddFeedFilter === "function"
+            ? oddFeedFilter
+            : () => !!oddFeedFilter;
     diContainer.register({
         registerType: "class",
         key: "oddFeedEventSource",
@@ -68,9 +72,9 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
         value: OddFeedCronImpl,
     });
     diContainer.register({
-        registerType: "function",
+        registerType: "value",
         key: "oddFeedFilter",
-        value: oddFeedFilter,
+        value: normalizedOddFeedFilter,
     })
 }
 

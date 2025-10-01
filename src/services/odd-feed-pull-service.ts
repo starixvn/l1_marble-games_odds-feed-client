@@ -11,14 +11,14 @@ interface OddFeedPullServiceContainer<TEvent extends Event = Event> {
     oddFeedService: OddFeedService;
     logService: Logger;
     oddFeedStore: OddFeedStore;
-    oddFeedFilter: (event: TEvent) => boolean;
+    oddFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean;
 }
 
 export class OddFeedPullServiceImpl<TEvent extends Event = Event> implements OddFeedPullService<TEvent> {
     private readonly oddFeedService: OddFeedService;
     private readonly oddFeedStore: OddFeedStore;
     private readonly logService: Logger;
-    private readonly oddFeedFilter: (event: TEvent) => boolean;
+    private readonly oddFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean;
 
     constructor(container: OddFeedPullServiceContainer) {
         this.oddFeedService = container.oddFeedService;
@@ -29,12 +29,13 @@ export class OddFeedPullServiceImpl<TEvent extends Event = Event> implements Odd
 
     async pullUpcoming() {
         const upcomingEvents = await this.oddFeedService.fetchSchedule();
-        (upcomingEvents as TEvent[]).filter(this.oddFeedFilter).forEach((event) => {
+        const filteredEvents = (upcomingEvents as TEvent[]).filter(this.oddFeedFilter);
+        filteredEvents.forEach((event) => {
             const gameId = idHelper.extractGameId(event.eventID);
             this.oddFeedStore.setEventByGameId(gameId, event.eventID, event);
         });
 
-        return upcomingEvents as TEvent[];
+        return filteredEvents;
     }
 
     async pullEventWithEventDetails(eventId: number) {
