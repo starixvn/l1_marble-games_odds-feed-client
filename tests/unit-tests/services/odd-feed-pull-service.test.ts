@@ -11,7 +11,8 @@ describe("OddFeedPullService", () => {
             const setEventByGameId = jest.fn();
             const oddFeedStore = { setEventByGameId } as any;
             const logService = { logError: jest.fn() } as any;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService });
+            const oddFeedFilter = () => true;
+            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
 
             // Act
             const result = await svc.pullUpcoming();
@@ -28,7 +29,8 @@ describe("OddFeedPullService", () => {
             const oddFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(undefined) } as any;
             const oddFeedStore = { setEventByGameId: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService });
+            const oddFeedFilter = () => true;
+            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
 
             // Act
             const result = await svc.pullEventWithEventDetails(123);
@@ -45,7 +47,8 @@ describe("OddFeedPullService", () => {
             const oddFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(event) } as any;
             const oddFeedStore = { setEventByGameId: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService });
+            const oddFeedFilter = () => true;
+            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
 
             // Act
             const result = await svc.pullEventWithEventDetails(event.eventID);
