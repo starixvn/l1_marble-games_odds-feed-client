@@ -1,0 +1,214 @@
+import { OddFeedServiceImpl } from "@/services";
+import { AppConfigs, Logger } from "@/interfaces";
+
+describe("OddFeedService", () => {  
+    const makeResponse = (status: number, data: any) => ({
+        status,
+        json: async () => data,
+    });
+
+    let logService: Logger;
+    let appConfigs: AppConfigs;
+    let service: OddFeedServiceImpl;
+
+    beforeEach(() => {
+        (global as any).fetch = jest.fn();
+        logService = { logError: jest.fn() };
+        appConfigs = {
+            oddsFeedAPI: {
+                url: "https://api.example.com",
+                operatorId: "op-1",
+                password: "pwd",
+            },
+        };
+        service = new OddFeedServiceImpl({ logService, appConfigs });
+    });
+
+    describe("fetchSchedule", () => {
+        it("returns schedule on success", async () => {
+            // Arrange
+            const events = [{ eventID: 1 }];
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(200, events));
+
+            // Act
+            const result = await service.fetchSchedule(1, 0);
+
+            // Assert
+            expect(result).toEqual(events);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(2);
+        });
+
+        it("uses default retries/delay and returns schedule", async () => {
+            // Arrange
+            const events = [{ eventID: 3 }];
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(200, events));
+
+            // Act
+            const result = await service.fetchSchedule();
+
+            // Assert
+            expect(result).toEqual(events);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(2);
+        });
+
+        it("refreshes token on 401 then succeeds", async () => {
+            // Arrange
+            const events = [{ eventID: 2 }];
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "t1" }))
+                .mockResolvedValueOnce(makeResponse(401, {}))
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "t2" }))
+                .mockResolvedValueOnce(makeResponse(200, events));
+
+            // Act
+            const result = await service.fetchSchedule(2, 0);
+
+            // Assert
+            expect(result).toEqual(events);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(4);
+        });
+
+        it("returns empty array and logs on non-200", async () => {
+            // Arrange
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(500, {}));
+
+            // Act
+            const result = await service.fetchSchedule(1, 0);
+
+            // Assert
+            expect(result).toEqual([]);
+            expect(logService.logError).toHaveBeenCalled();
+        });
+    });
+
+    describe("fetchEventDetails", () => {
+        it("returns event details on success", async () => {
+            // Arrange
+            const event = { eventID: 10 } as any;
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(200, event));
+
+            // Act
+            const result = await service.fetchEventDetails(10, undefined, 1, 0);
+
+            // Assert
+            expect(result).toEqual(event);
+            expect(logService.logError).not.toHaveBeenCalled();
+        });
+
+        it("uses default validator/retries/delay and returns event", async () => {
+            // Arrange
+            const event = { eventID: 14 } as any;
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(200, event));
+
+            // Act
+            const result = await service.fetchEventDetails(14);
+
+            // Assert
+            expect(result).toEqual(event);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(2);
+        });
+
+        it("retries on 401 then succeeds", async () => {
+            // Arrange
+            const event = { eventID: 11 } as any;
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "t1" }))
+                .mockResolvedValueOnce(makeResponse(401, {}))
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "t2" }))
+                .mockResolvedValueOnce(makeResponse(200, event));
+
+            // Act
+            const result = await service.fetchEventDetails(11, undefined, 2, 0);
+
+            // Assert
+            expect(result).toEqual(event);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(4);
+        });
+
+        it("returns null and logs when validator fails", async () => {
+            // Arrange
+            const badEvent = { eventID: 12 } as any;
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(200, badEvent));
+            const validator = () => false;
+
+            // Act
+            const result = await service.fetchEventDetails(12, validator, 1, 0);
+
+            // Assert
+            expect(result).toBeNull();
+            expect(logService.logError).toHaveBeenCalled();
+        });
+
+        it("returns null and logs on non-200", async () => {
+            // Arrange
+            (global as any).fetch
+                .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
+                .mockResolvedValueOnce(makeResponse(500, {}));
+
+            // Act
+            const result = await service.fetchEventDetails(13, undefined, 1, 0);
+
+            // Assert
+            expect(result).toBeNull();
+            expect(logService.logError).toHaveBeenCalled();
+        });
+    });
+
+    describe("getRemoteJson", () => {
+        it("returns parsed json on success", async () => {
+            // Arrange
+            const data = { a: 1 };
+            (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
+
+            // Act
+            const result = await service.getRemoteJson<typeof data>("https://x/y", 1, 0);
+
+            // Assert
+            expect(result).toEqual(data);
+            expect(logService.logError).not.toHaveBeenCalled();
+        });
+
+        it("uses default retries/delay and returns parsed json", async () => {
+            // Arrange
+            const data = { a: 2 };
+            (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
+
+            // Act
+            const result = await service.getRemoteJson<typeof data>("https://x/z");
+
+            // Assert
+            expect(result).toEqual(data);
+            expect(logService.logError).not.toHaveBeenCalled();
+            expect((global as any).fetch).toHaveBeenCalledTimes(1);
+        });
+
+        it("returns null and logs on fetch failure", async () => {
+            // Arrange
+            (global as any).fetch.mockRejectedValueOnce(new Error("network"));
+
+            // Act
+            const result = await service.getRemoteJson("https://x/y", 1, 0);
+
+            // Assert
+            expect(result).toBeNull();
+            expect(logService.logError).toHaveBeenCalled();
+        });
+    });
+});

@@ -1,0 +1,9 @@
+**/.vscode
+**/*.test.ts
+**/coverage
+**/reports
+.prettierignore
+.prettierrc
+.gitlab-ci.yml
+babel.config.cjs
+jest.config.cjs
