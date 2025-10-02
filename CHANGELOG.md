@@ -1,3 +1,10 @@
+# [1.2.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.1.0...v1.2.0) (2025-10-02)
+
+
+### Features
+
+* support awilix INJECTION MODE PROXY ([2cb3624](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/2cb3624a3d500d1d1758ad0baa0122411be95c8f))
+
 # [1.1.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v[secure]...v1.1.0) (2025-10-01)
 
 
