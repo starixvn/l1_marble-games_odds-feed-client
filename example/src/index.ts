@@ -6,9 +6,7 @@ import { appConfigs } from "./app-configs";
 import { CustomLogger } from "./logger";
 import { LogService } from "./log-service";
 
-const container = createContainer({
-    injectionMode: InjectionMode.PROXY
-});
+const container = createContainer();
 
 
 container.register({
