@@ -76,7 +76,21 @@ export class AwilixDIContainer implements DiContainer {
             .disposer(disposer ?? (() => {}));
 
         const finalReg = isClassicInjection
-            ? reg.inject((cradle: any) => ({ container: cradle }))
+            ? reg.inject((cradle: any) => ({
+                container: new Proxy({}, {
+                    get: (_target, prop: string | symbol) => {
+                        const key = String(prop);
+                        // prefer direct cradle property if present
+                        if (key in cradle) {
+                            return cradle[key];
+                        }
+                        if (typeof cradle.resolve === "function") {
+                            try { return cradle.resolve(key); } catch { /* ignore */ }
+                        }
+                        return undefined;
+                    },
+                })
+            }))
             : reg;
 
         this.container.register({ [key]: finalReg });
