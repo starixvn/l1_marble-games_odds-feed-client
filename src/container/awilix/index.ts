@@ -1,4 +1,4 @@
-import { aliasTo, asClass, asFunction, asValue, AwilixContainer } from "awilix";
+import { aliasTo, asClass, asFunction, asValue, AwilixContainer, InjectionMode } from "awilix";
 import { Constructor, DiContainer } from "@/container/core";
 
 
@@ -69,9 +69,17 @@ export class AwilixDIContainer implements DiContainer {
         key: string,
         disposer?: (service: T) => void | Promise<void>,
     }): void {
-        this.container.register({
-            [key]: asClass(type).singleton().disposer(disposer ?? (() => {}))
-        })
+        const isClassicInjection = this.container.options.injectionMode === InjectionMode.CLASSIC;
+
+        const reg = asClass(type)
+            .singleton()
+            .disposer(disposer ?? (() => {}));
+
+        const finalReg = isClassicInjection
+            ? reg.inject((cradle: any) => ({ container: cradle }))
+            : reg;
+
+        this.container.register({ [key]: finalReg });
     }
 
     private registerValue<T>({
