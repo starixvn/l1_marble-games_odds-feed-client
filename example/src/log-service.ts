@@ -18,14 +18,14 @@ export class LogService {
 
     init() {
         this.oddFeedEventSource.registerEventListener(
-            OddFeedEventName.EventStart,
+            OddFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
     }
 
     dispose() {
         this.oddFeedEventSource.unregisterEventListener(
-            OddFeedEventName.EventStart,
+            OddFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
     }
