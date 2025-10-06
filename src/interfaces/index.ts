@@ -8,3 +8,4 @@ export * from "./odd-feed-pull-service";
 export * from "./odd-feed-scheduler";
 export * from "./odd-feed-store";
 export * from "./event-cleaner-service";
+export * from "./marble-logger-service";

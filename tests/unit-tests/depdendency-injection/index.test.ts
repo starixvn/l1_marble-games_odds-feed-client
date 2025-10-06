@@ -13,6 +13,21 @@ describe("dependency-injection", () => {
             expect(diContainer.register).toHaveBeenCalled();
         });
 
+		it("registers marbleLoggerService as class", () => {
+			// Arrange
+			const diContainer = { register: jest.fn() } as any;
+
+			// Act
+			register(diContainer);
+
+			// Assert
+			const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>;
+			const marbleReg = calls.map(c => c[0]).find(arg => arg && arg.key === "marbleLoggerService");
+			expect(marbleReg).toBeDefined();
+			expect(marbleReg.registerType).toBe("class");
+			expect(marbleReg.value).toBeDefined();
+		});
+
         it("registers oddFeedFilter default as a predicate returning true", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
@@ -101,13 +116,15 @@ describe("dependency-injection", () => {
     });
 
     describe("init", () => {
-        it("resolves and initializes services", () => {
+		it("resolves and initializes services", () => {
             // Arrange
+			const marbleLoggerService = { init: jest.fn() };
             const oddFeedStore = { initEvent: jest.fn() };
             const eventCleanerService = { initEvent: jest.fn() };
             const oddFeedCron = { start: jest.fn() };
             const diContainer = {
                 resolve: jest.fn((key: string) => {
+					if (key === "marbleLoggerService") return marbleLoggerService;
                     if (key === "oddFeedStore") return oddFeedStore;
                     if (key === "eventCleanerService") return eventCleanerService;
                     if (key === "oddFeedCron") return oddFeedCron;
@@ -119,6 +136,7 @@ describe("dependency-injection", () => {
             init(diContainer);
 
             // Assert
+			expect(marbleLoggerService.init).toHaveBeenCalled();
             expect(oddFeedStore.initEvent).toHaveBeenCalled();
             expect(eventCleanerService.initEvent).toHaveBeenCalled();
             expect(oddFeedCron.start).toHaveBeenCalled();

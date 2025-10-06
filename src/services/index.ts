@@ -6,3 +6,4 @@ export * from "./event-cleaner-service";
 export * from "./scheduler";
 export * from "./odd-feed-service";
 export * from "./odd-feed-cron";
+export * from "./marble-logger-service";
