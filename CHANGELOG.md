@@ -1,3 +1,10 @@
+# [1.3.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.2.1...v1.3.0) (2025-10-06)
+
+
+### Features
+
+* add new marble log service for odd feed ([628bf83](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/628bf838b49f2eb9987ea5800f1afcb1c5678d09))
+
 ## [1.2.1](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.2.0...v1.2.1) (2025-10-02)
 
 
