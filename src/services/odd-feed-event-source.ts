@@ -63,6 +63,11 @@ export class OddFeedEventSourceImpl<TEvent extends Event = Event> implements Odd
         this.emit(key, { event });
     }
 
+    public onEventDetailUpComing(event: TEvent, index: number) {
+        const key = OddFeedEventName.EventDetailUpComing;
+        this.emit(key, { event, index });
+    }
+
     public onEventDetailStart(event: TEvent, index: number) {
         const key = OddFeedEventName.EventDetailStart;
         this.emit(key, { event, index });

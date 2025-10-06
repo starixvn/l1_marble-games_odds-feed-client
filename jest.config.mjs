@@ -1,6 +1,4 @@
-import { compilerOptions } from "./tsconfig.json"
-
-module.exports = async () => {
+export default async () => {
     return {
       rootDir: "./",
       verbose: true,

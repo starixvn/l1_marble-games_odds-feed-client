@@ -185,6 +185,25 @@ describe("OddFeedEventSource", () => {
         });
     });
 
+    describe("onEventDetailUpComing", () => {
+        it("emits wildcard and specific", () => {
+            // Arrange
+            const src = new OddFeedEventSourceImpl();
+            const wildcard = jest.fn();
+            const specific = jest.fn();
+            const event = { eventID: 71 } as any;
+            src.registerWildcardEventListener(wildcard);
+            src.registerEventDetailEventListener(OddFeedEventName.EventDetailUpComing, specific);
+
+            // Act
+            src.onEventDetailUpComing(event, 3);
+
+            // Assert
+            expect(wildcard).toHaveBeenCalledWith(OddFeedEventName.EventDetailUpComing, { event, index: 3 });
+            expect(specific).toHaveBeenCalledWith({ event, index: 3 });
+        });
+    });
+
     describe("onEventDetailStart", () => {
         it("emits wildcard and specific", () => {
             // Arrange

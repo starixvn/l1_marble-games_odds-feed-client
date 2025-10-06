@@ -39,7 +39,7 @@ describe("OddFeedScheduler", () => {
     describe("scheduleEvent", () => {
         it("schedules start and detail events with correct keys", () => {
             // Arrange
-            const oddFeedEventSource = { onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const oddFeedPullService = { pullEventWithEventDetails: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
@@ -55,11 +55,16 @@ describe("OddFeedScheduler", () => {
             expect(keys).toContain(`${OddFeedEventName.EventDetailStart}-${event.eventID}-0`);
             expect(keys).toContain(`${OddFeedEventName.EventDetailOddsAvailable}-${event.eventID}-0`);
             expect(keys).toContain(`${OddFeedEventName.EventDetailResultsAvailable}-${event.eventID}-0`);
+
+            // upcoming events are emitted immediately, not scheduled
+            expect(oddFeedEventSource.onEventUpcoming).toHaveBeenCalledWith(event);
+            expect(oddFeedEventSource.onEventDetailUpComing).toHaveBeenCalledWith(event, 0);
+            expect(oddFeedEventSource.onEventDetailUpComing).toHaveBeenCalledWith(event, 1);
         });
 
         it("invokes scheduled start handler to emit when details available", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -78,7 +83,7 @@ describe("OddFeedScheduler", () => {
 
         it("invokes scheduled detail start handler to emit when details available", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -97,7 +102,7 @@ describe("OddFeedScheduler", () => {
 
         it("invokes scheduled odds available handler to emit when details available", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -116,7 +121,7 @@ describe("OddFeedScheduler", () => {
 
         it("invokes results available handler with retries until result is present", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -137,7 +142,7 @@ describe("OddFeedScheduler", () => {
 
         it("does not emit start when no updated event is returned", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -156,7 +161,7 @@ describe("OddFeedScheduler", () => {
 
         it("does not emit detail start when no updated event is returned", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -175,7 +180,7 @@ describe("OddFeedScheduler", () => {
 
         it("does not emit odds available when no updated event is returned", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -194,7 +199,7 @@ describe("OddFeedScheduler", () => {
 
         it("stops retrying and logs when no updated event and retry < 0", async () => {
             // Arrange
-            const oddFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn() } as any;
+            const oddFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();

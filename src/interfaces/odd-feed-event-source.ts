@@ -3,6 +3,7 @@ import { Event } from "@/domain";
 export enum OddFeedEventName {
     Wildcard = "*",
     EventStart = "event.ScheduleStart",
+    EventDetailUpComing = "eventDetail.UpComing",
     EventDetailStart = "eventDetail.ScheduleStart",
     EventDetailOddsAvailable = "eventDetail.OddsAvailable",
     EventDetailResultsAvailable = "eventDetail.ResultsAvailable",
@@ -48,6 +49,7 @@ export type OddFeedEventSource<TEvent extends Event = Event> = {
     onEventStart: (event: TEvent) => void;
     onDataCleanup: (eventID: number) => void;
     onEventUpcoming: (event: TEvent) => void;
+    onEventDetailUpComing: (event: TEvent, index: number) => void;
     onEventDetailStart: (event: TEvent, index: number) => void;
     onEventDetailOddsAvailable: (event: TEvent, index: number) => void;
     onEventDetailResultsAvailable: (event: TEvent, index: number) => void;
