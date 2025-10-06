@@ -8,9 +8,11 @@ import {
     SchedulerImpl,
     OddFeedServiceImpl,
     OddFeedCronImpl,
+    MarbleLoggerServiceImpl
  } from "@/services";
 import { 
     EventCleanerService, 
+    MarbleLoggerService, 
     OddFeedCron, 
     OddFeedStore,
 } from "@/interfaces";
@@ -28,6 +30,11 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
         typeof oddFeedFilter === "function"
             ? oddFeedFilter
             : () => !!oddFeedFilter;
+    diContainer.register({
+        registerType: "class",
+        key: "marbleLoggerService",
+        value: MarbleLoggerServiceImpl,
+    })
     diContainer.register({
         registerType: "class",
         key: "oddFeedEventSource",
@@ -79,6 +86,7 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
 }
 
 function init(container: DiContainer) {
+    container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
     container.resolve<OddFeedStore>("oddFeedStore").initEvent();
     container.resolve<EventCleanerService>("eventCleanerService").initEvent();
     container.resolve<OddFeedCron>("oddFeedCron").start();

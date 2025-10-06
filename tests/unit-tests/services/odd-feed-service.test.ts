@@ -1,5 +1,5 @@
 import { OddFeedServiceImpl } from "@/services";
-import { AppConfigs, Logger } from "@/interfaces";
+import { AppConfigs, Logger, MarbleLoggerService } from "@/interfaces";
 
 describe("OddFeedService", () => {  
     const makeResponse = (status: number, data: any) => ({
@@ -9,11 +9,13 @@ describe("OddFeedService", () => {
 
     let logService: Logger;
     let appConfigs: AppConfigs;
+    let marbleLoggerService: MarbleLoggerService;
     let service: OddFeedServiceImpl;
 
     beforeEach(() => {
         (global as any).fetch = jest.fn();
         logService = { logError: jest.fn() };
+        marbleLoggerService = { init: jest.fn(), log: jest.fn(), error: jest.fn(), warning: jest.fn(), debug: jest.fn() } as any;
         appConfigs = {
             oddsFeedAPI: {
                 url: "https://api.example.com",
@@ -21,7 +23,7 @@ describe("OddFeedService", () => {
                 password: "pwd",
             },
         };
-        service = new OddFeedServiceImpl({ logService, appConfigs });
+        service = new OddFeedServiceImpl({ logService, appConfigs, marbleLoggerService } as any);
     });
 
     describe("fetchSchedule", () => {
@@ -38,6 +40,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(events);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(2);
         });
 
@@ -54,6 +57,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(events);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(2);
         });
 
@@ -72,6 +76,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(events);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(4);
         });
 
@@ -86,7 +91,7 @@ describe("OddFeedService", () => {
 
             // Assert
             expect(result).toEqual([]);
-            expect(logService.logError).toHaveBeenCalled();
+            expect(marbleLoggerService.error).toHaveBeenCalled();
         });
     });
 
@@ -104,6 +109,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(event);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
         });
 
         it("uses default validator/retries/delay and returns event", async () => {
@@ -119,6 +125,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(event);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(2);
         });
 
@@ -137,6 +144,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toEqual(event);
             expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(4);
         });
 
@@ -154,6 +162,7 @@ describe("OddFeedService", () => {
             // Assert
             expect(result).toBeNull();
             expect(logService.logError).toHaveBeenCalled();
+            expect(marbleLoggerService.error).toHaveBeenCalled();
         });
 
         it("returns null and logs on non-200", async () => {
@@ -167,7 +176,7 @@ describe("OddFeedService", () => {
 
             // Assert
             expect(result).toBeNull();
-            expect(logService.logError).toHaveBeenCalled();
+            expect(marbleLoggerService.error).toHaveBeenCalled();
         });
     });
 
@@ -178,11 +187,11 @@ describe("OddFeedService", () => {
             (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
 
             // Act
-            const result = await service.getRemoteJson<typeof data>("https://x/y", 1, 0);
+            const result = await service.getRemoteJson<typeof data>("https://x/y", { eventId: 1 }, 1, 0);
 
             // Assert
             expect(result).toEqual(data);
-            expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
         });
 
         it("uses default retries/delay and returns parsed json", async () => {
@@ -191,11 +200,11 @@ describe("OddFeedService", () => {
             (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
 
             // Act
-            const result = await service.getRemoteJson<typeof data>("https://x/z");
+            const result = await service.getRemoteJson<typeof data>("https://x/z", { eventId: 2 });
 
             // Assert
             expect(result).toEqual(data);
-            expect(logService.logError).not.toHaveBeenCalled();
+            expect(marbleLoggerService.error).not.toHaveBeenCalled();
             expect((global as any).fetch).toHaveBeenCalledTimes(1);
         });
 
@@ -204,11 +213,11 @@ describe("OddFeedService", () => {
             (global as any).fetch.mockRejectedValueOnce(new Error("network"));
 
             // Act
-            const result = await service.getRemoteJson("https://x/y", 1, 0);
+            const result = await service.getRemoteJson("https://x/y", { eventId: 3 }, 1, 0);
 
             // Assert
             expect(result).toBeNull();
-            expect(logService.logError).toHaveBeenCalled();
+            expect(marbleLoggerService.error).toHaveBeenCalled();
         });
     });
 });

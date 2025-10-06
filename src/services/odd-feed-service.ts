@@ -4,30 +4,33 @@ import {
     AppConfigs, 
     Logger, 
     OddFeedService,
+    MarbleLoggerService
 } from "@/interfaces";
-
-
 
 interface OddsFeedServiceContainer {
   logService: Logger;
   appConfigs: AppConfigs;
+  marbleLoggerService: MarbleLoggerService;
+
 }
 
 export class OddFeedServiceImpl implements OddFeedService {
   private readonly logService: Logger;
   private readonly appConfigs: AppConfigs;
+  private readonly marbleLoggerService: MarbleLoggerService;
   private token = "";
 
   constructor(container: OddsFeedServiceContainer) {
     this.logService = container.logService;
     this.appConfigs = container.appConfigs;
+    this.marbleLoggerService = container.marbleLoggerService;
   }
   
-  async fetchSchedule(retries = 3, delay = 1000): Promise<Event[]> {
+  async fetchSchedule(retries = 3, delay = 1000, { eventId }: { eventId?: number } = {}): Promise<Event[]> {
     try {
       return await retry(() => this.getSchedule(), retries, delay);
     } catch (error) {
-      this.logService.logError(`Failed to get schedule: ${error}`);
+      this.marbleLoggerService.error(error as Error, { eventId });
       return [];
     }
   }
@@ -41,17 +44,17 @@ export class OddFeedServiceImpl implements OddFeedService {
     try {
       return await retry(() => this.getEventDetails(eventId, validator), retries, delay);
     } catch (error) {
-      this.logService.logError(`Failed to get event details of event ${eventId} with error: ${error}`);
+      this.marbleLoggerService.error(error as Error, { eventId });
       return null;
     }
   }
   
-  async getRemoteJson<T>(url: string, retries = 3, delay = 1000): Promise<T | null> {
+  async getRemoteJson<T>(url: string, annotation: { eventId?: number }, retries = 3, delay = 1000): Promise<T | null> {
     try {
       const response = await retry(() => fetch(url), retries, delay);
       return (await response.json()) as T;
     } catch (error) {
-      this.logService.logError(`Failed to get json from ${url}! Error: ${error}`);
+      this.marbleLoggerService.error(error as Error, annotation);
       return null;
     }
   }
