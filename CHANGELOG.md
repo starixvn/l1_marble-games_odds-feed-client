@@ -1,3 +1,16 @@
+# [1.4.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.3.0...v1.4.0) (2025-10-06)
+
+
+### Bug Fixes
+
+* node 24 compatibility ([43fca27](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/43fca271ea88a9ab4190fc666a1f37dcf4893dcb))
+* version mismatch ([08059e9](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/08059e98cb91b4f22650148f3ba5e99dedc26e36))
+
+
+### Features
+
+* support event detail upcoming ([256cad6](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/256cad6ffe14cd7eb1c7a229502ce736f0152e56))
+
 # [1.3.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.2.1...v1.3.0) (2025-10-06)
 
 
