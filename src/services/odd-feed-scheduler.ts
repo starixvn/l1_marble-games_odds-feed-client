@@ -37,6 +37,7 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         this.scheduleEventUpcoming(event);
         this.scheduleEventStart(event);
         event.eventDetails.forEach((_, index) => {
+            this.scheduleEventDetailUpComing(event, index);
             this.scheduleEventDetailStart(event, index);
             this.scheduleEventDetailOddsAvailable(event, index);
             this.scheduleEventDetailResultsAvailable(event, index);
@@ -51,6 +52,10 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
             this.handleEventStart.bind(this, event), {
             keyOverride: key,
         });
+    }
+
+    protected scheduleEventDetailUpComing(event: OddFeedEvent, index: number) {
+        this.oddFeedEventSource.onEventDetailUpComing(event, index);
     }
 
     protected scheduleEventDetailStart(event: OddFeedEvent, index: number) {
