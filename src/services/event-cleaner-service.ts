@@ -2,37 +2,37 @@ import { idHelper } from "@/utils";
 import { 
     EventCleanerService, 
     EventNotification, 
-    OddFeedEventName, 
-    OddFeedEventSource, 
+    OddsFeedEventName, 
+    OddsFeedEventSource, 
 } from "@/interfaces";
 
 const MAX_LENGTH = 50;
 
 interface EventCleanerServiceContainer {
-    oddFeedEventSource: OddFeedEventSource;
+    oddsFeedEventSource: OddsFeedEventSource;
 }
 
 export class EventCleanerServiceImpl implements EventCleanerService {
-    private readonly oddFeedEventSource: OddFeedEventSource;
+    private readonly oddsFeedEventSource: OddsFeedEventSource;
     private _eventQueueByGameId: Record<string, number[]> = {};
     private readonly maxLength = MAX_LENGTH;
     private readonly boundHandleEventStart: (notification: EventNotification) => void;
 
     constructor(container: EventCleanerServiceContainer) {
-        this.oddFeedEventSource = container.oddFeedEventSource;
+        this.oddsFeedEventSource = container.oddsFeedEventSource;
         this.boundHandleEventStart = this.handleEventStart.bind(this);
     }
 
     public initEvent() {
-        this.oddFeedEventSource.registerEventListener(
-            OddFeedEventName.EventStart,
+        this.oddsFeedEventSource.eventOn(
+            OddsFeedEventName.EventStart,
             this.boundHandleEventStart
         );
     }
 
     public dispose() {
-        this.oddFeedEventSource.unregisterEventListener(
-            OddFeedEventName.EventStart,
+        this.oddsFeedEventSource.eventOff(
+            OddsFeedEventName.EventStart,
             this.boundHandleEventStart
         );
     }
@@ -47,7 +47,7 @@ export class EventCleanerServiceImpl implements EventCleanerService {
         if (this._eventQueueByGameId[gameId].length > this.maxLength) {
             const eventIdToRemove = this._eventQueueByGameId[gameId].shift();
             if (eventIdToRemove) {
-                this.oddFeedEventSource.onDataCleanup(eventIdToRemove);
+                this.oddsFeedEventSource.emitDataCleanup(eventIdToRemove);
             }
         }
     }

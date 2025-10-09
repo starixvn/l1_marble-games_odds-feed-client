@@ -1,18 +1,18 @@
-import { OddFeedPullServiceImpl } from "@/services";
+import { OddsFeedPullServiceImpl as oddsFeedPullServiceImpl } from "@/services";
 import { idHelper } from "@/utils";
 
-describe("OddFeedPullService", () => {
+describe("oddsFeedPullService", () => {
     describe("pullUpcoming", () => {
         it("stores upcoming events by game id and returns list", async () => {
             // Arrange
             const eventA = { eventID: idHelper.createEventId(2, 10) } as any;
             const eventB = { eventID: idHelper.createEventId(3, 11) } as any;
-            const oddFeedService = { fetchSchedule: jest.fn().mockResolvedValue([eventA, eventB]) } as any;
+            const oddsFeedService = { fetchSchedule: jest.fn().mockResolvedValue([eventA, eventB]) } as any;
             const setEventByGameId = jest.fn();
-            const oddFeedStore = { setEventByGameId } as any;
+            const oddsFeedStore = { setEventByGameId } as any;
             const logService = { logError: jest.fn() } as any;
-            const oddFeedFilter = () => true;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
+            const oddsFeedFilter = () => true;
+            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, oddsFeedStore, logService, oddsFeedFilter });
 
             // Act
             const result = await svc.pullUpcoming();
@@ -26,11 +26,11 @@ describe("OddFeedPullService", () => {
     describe("pullEventWithEventDetails", () => {
         it("returns undefined and logs when details not available", async () => {
             // Arrange
-            const oddFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(undefined) } as any;
-            const oddFeedStore = { setEventByGameId: jest.fn() } as any;
+            const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(undefined) } as any;
+            const oddsFeedStore = { setEventByGameId: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
-            const oddFeedFilter = () => true;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
+            const oddsFeedFilter = () => true;
+            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, oddsFeedStore, logService, oddsFeedFilter });
 
             // Act
             const result = await svc.pullEventWithEventDetails(123);
@@ -38,24 +38,24 @@ describe("OddFeedPullService", () => {
             // Assert
             expect(result).toBeUndefined();
             expect(logService.logError).toHaveBeenCalled();
-            expect(oddFeedStore.setEventByGameId).not.toHaveBeenCalled();
+            expect(oddsFeedStore.setEventByGameId).not.toHaveBeenCalled();
         });
 
         it("stores and returns event when details available", async () => {
             // Arrange
             const event = { eventID: idHelper.createEventId(9, 1) } as any;
-            const oddFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(event) } as any;
-            const oddFeedStore = { setEventByGameId: jest.fn() } as any;
+            const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(event) } as any;
+            const oddsFeedStore = { setEventByGameId: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
-            const oddFeedFilter = () => true;
-            const svc = new OddFeedPullServiceImpl({ oddFeedService, oddFeedStore, logService, oddFeedFilter });
+            const oddsFeedFilter = () => true;
+            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, oddsFeedStore, logService, oddsFeedFilter });
 
             // Act
             const result = await svc.pullEventWithEventDetails(event.eventID);
 
             // Assert
             expect(result).toEqual(event);
-            expect(oddFeedStore.setEventByGameId).toHaveBeenCalled();
+            expect(oddsFeedStore.setEventByGameId).toHaveBeenCalled();
             expect(logService.logError).not.toHaveBeenCalled();
         });
     });

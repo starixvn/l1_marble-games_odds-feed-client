@@ -1,6 +1,6 @@
 import { asClass, asValue, createContainer, InjectionMode } from "awilix";
-import { init, register } from "odd-feed-client/dependency-injection";
-import { AwilixDIContainer } from "odd-feed-client/awilix";
+import { init, register } from "odds-feed-client/dependency-injection";
+import { AwilixDIContainer } from "odds-feed-client/awilix";
 
 import { appConfigs } from "./app-configs";
 import { CustomLogger } from "./logger";

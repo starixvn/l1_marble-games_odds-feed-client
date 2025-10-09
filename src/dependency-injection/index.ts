@@ -1,35 +1,35 @@
 import { DiContainer } from "@/container/core";
 import { 
-    OddFeedEventSourceImpl,
-    OddFeedPullServiceImpl,
-    OddFeedSchedulerImpl,
-    OddFeedStoreImpl,
+    OddsFeedEventSourceImpl,
+    OddsFeedPullServiceImpl,
+    OddsFeedSchedulerImpl,
+    OddsFeedStoreImpl,
     EventCleanerServiceImpl,
     SchedulerImpl,
-    OddFeedServiceImpl,
-    OddFeedCronImpl,
+    OddsFeedServiceImpl,
+    OddsFeedCronImpl,
     MarbleLoggerServiceImpl
  } from "@/services";
 import { 
     EventCleanerService, 
     MarbleLoggerService, 
-    OddFeedCron, 
-    OddFeedStore,
+    OddsFeedCron, 
+    OddsFeedStore,
 } from "@/interfaces";
 import { Event } from "@/domain";
 
 
 function register<TEvent extends Event = Event>(diContainer: DiContainer, {
-    oddFeedFilter = true,
+    oddsFeedFilter = true,
 }: {
-    oddFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
+    oddsFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
 } = {
-    oddFeedFilter: true,
+    oddsFeedFilter: true,
 }) {
-    const normalizedOddFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
-        typeof oddFeedFilter === "function"
-            ? oddFeedFilter
-            : () => !!oddFeedFilter;
+    const normalizedoddsFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
+        typeof oddsFeedFilter === "function"
+            ? oddsFeedFilter
+            : () => !!oddsFeedFilter;
     diContainer.register({
         registerType: "class",
         key: "marbleLoggerService",
@@ -37,24 +37,24 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedEventSource",
-        value: OddFeedEventSourceImpl,
+        key: "oddsFeedEventSource",
+        value: OddsFeedEventSourceImpl,
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedPullService",
-        value: OddFeedPullServiceImpl,
+        key: "oddsFeedPullService",
+        value: OddsFeedPullServiceImpl,
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedScheduler",
-        value: OddFeedSchedulerImpl,
+        key: "oddsFeedScheduler",
+        value: OddsFeedSchedulerImpl,
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedStore",
-        value: OddFeedStoreImpl,
-        disposer: (oddFeedStore) => oddFeedStore.dispose(),
+        key: "oddsFeedStore",
+        value: OddsFeedStoreImpl,
+        disposer: (oddsFeedStore) => oddsFeedStore.dispose(),
     })
     diContainer.register({
         registerType: "class",
@@ -70,26 +70,26 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedService",
-        value: OddFeedServiceImpl,
+        key: "oddsFeedService",
+        value: OddsFeedServiceImpl,
     })
     diContainer.register({
         registerType: "class",
-        key: "oddFeedCron",
-        value: OddFeedCronImpl,
+        key: "oddsFeedCron",
+        value: OddsFeedCronImpl,
     });
     diContainer.register({
         registerType: "value",
-        key: "oddFeedFilter",
-        value: normalizedOddFeedFilter,
+        key: "oddsFeedFilter",
+        value: normalizedoddsFeedFilter,
     })
 }
 
 function init(container: DiContainer) {
     container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
-    container.resolve<OddFeedStore>("oddFeedStore").initEvent();
+    container.resolve<OddsFeedStore>("oddsFeedStore").initEvent();
     container.resolve<EventCleanerService>("eventCleanerService").initEvent();
-    container.resolve<OddFeedCron>("oddFeedCron").start();
+    container.resolve<OddsFeedCron>("oddsFeedCron").start();
 }
 
 export { register, init };

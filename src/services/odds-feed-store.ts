@@ -1,32 +1,32 @@
 import { idHelper } from "@/utils";
 import { 
-    OddFeedEventSource, 
+    OddsFeedEventSource, 
     SystemNotification, 
-    OddFeedStore,
+    OddsFeedStore,
 } from "@/interfaces";
 import { Event } from "@/domain";
 
-interface OddFeedStoreContainer {
-    oddFeedEventSource: OddFeedEventSource;
+interface OddsFeedStoreContainer {
+    oddsFeedEventSource: OddsFeedEventSource;
 }
 
-export class OddFeedStoreImpl implements OddFeedStore {
+export class OddsFeedStoreImpl implements OddsFeedStore {
     // [gameId][eventId]
     private readonly eventByGameId: Record<string, Record<number, Event>> = {};
-    private readonly oddFeedEventSource: OddFeedEventSource;
+    private readonly oddsFeedEventSource: OddsFeedEventSource;
     private readonly boundHandleSystemDataCleanup: (notification: SystemNotification) => void;
-    constructor(container: OddFeedStoreContainer) {
-        this.oddFeedEventSource = container.oddFeedEventSource;
+    constructor(container: OddsFeedStoreContainer) {
+        this.oddsFeedEventSource = container.oddsFeedEventSource;
         this.boundHandleSystemDataCleanup = this.handleSystemDataCleanup.bind(this);
-        this.oddFeedEventSource.registerSystemDataCleanupEventListener(this.boundHandleSystemDataCleanup);
+        this.oddsFeedEventSource.cleanupOn(this.boundHandleSystemDataCleanup);
     }
 
     public initEvent() {
-        this.oddFeedEventSource.registerSystemDataCleanupEventListener(this.boundHandleSystemDataCleanup);
+        this.oddsFeedEventSource.cleanupOn(this.boundHandleSystemDataCleanup);
     }
 
     public dispose() {
-        this.oddFeedEventSource.unregisterSystemDataCleanupEventListener(this.boundHandleSystemDataCleanup);
+        this.oddsFeedEventSource.cleanupOff(this.boundHandleSystemDataCleanup);
     }
 
     public handleSystemDataCleanup({ eventID }: SystemNotification) {
