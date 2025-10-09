@@ -7,7 +7,7 @@ describe("package index exports", () => {
 			const mod = require("@/");
 
 			// Assert
-			expect(mod).toHaveProperty("OddFeedEventName");
+			expect(mod).toHaveProperty("oddsFeedEventName");
 			expect(mod).toHaveProperty("SystemEventName");
 		});
 	});

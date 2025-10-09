@@ -1,7 +1,7 @@
 {
-    "name": "odd-feed-client",
-    "version": "1.4.0",
-    "description": "Event-based odd feed client",
+    "name": "odds-feed-client",
+    "version": "0.0.0",
+    "description": "Event-based odds feed client",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
     "type": "module",

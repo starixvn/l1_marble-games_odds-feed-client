@@ -1,24 +1,24 @@
 import { EventCleanerServiceImpl } from "@/services";
-import { OddFeedEventName } from "@/interfaces";
+import { oddsFeedEventName } from "@/interfaces";
 import { idHelper } from "@/utils";
 
 describe("EventCleanerService", () => {
     describe("initEvent", () => {
         it("registers EventStart listener", () => {
             // Arrange
-            const oddFeedEventSource = {
+            const oddsFeedEventSource = {
                 registerEventListener: jest.fn(),
                 unregisterEventListener: jest.fn(),
                 onDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
 
             // Act
             service.initEvent();
 
             // Assert
-            expect(oddFeedEventSource.registerEventListener).toHaveBeenCalledWith(
-                OddFeedEventName.EventStart,
+            expect(oddsFeedEventSource.registerEventListener).toHaveBeenCalledWith(
+                oddsFeedEventName.EventStart,
                 expect.any(Function)
             );
         });
@@ -27,21 +27,21 @@ describe("EventCleanerService", () => {
     describe("dispose", () => {
         it("unregisters EventStart listener", () => {
             // Arrange
-            const oddFeedEventSource = {
+            const oddsFeedEventSource = {
                 registerEventListener: jest.fn(),
                 unregisterEventListener: jest.fn(),
                 onDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
             service.initEvent();
-            const registered = (oddFeedEventSource.registerEventListener as jest.Mock).mock.calls[0][1];
+            const registered = (oddsFeedEventSource.registerEventListener as jest.Mock).mock.calls[0][1];
 
             // Act
             service.dispose();
 
             // Assert
-            expect(oddFeedEventSource.unregisterEventListener).toHaveBeenCalledWith(
-                OddFeedEventName.EventStart,
+            expect(oddsFeedEventSource.unregisterEventListener).toHaveBeenCalledWith(
+                oddsFeedEventName.EventStart,
                 registered
             );
         });
@@ -50,12 +50,12 @@ describe("EventCleanerService", () => {
     describe("handleEventStart", () => {
         it("enqueues events and triggers cleanup when exceeding max length", () => {
             // Arrange
-            const oddFeedEventSource = {
+            const oddsFeedEventSource = {
                 registerEventListener: jest.fn(),
                 unregisterEventListener: jest.fn(),
                 onDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
             const gameId = 1;
             const firstEventId = idHelper.createEventId(gameId, 0);
 
@@ -66,7 +66,7 @@ describe("EventCleanerService", () => {
             }
 
             // Assert
-            expect(oddFeedEventSource.onDataCleanup).toHaveBeenCalledWith(firstEventId);
+            expect(oddsFeedEventSource.onDataCleanup).toHaveBeenCalledWith(firstEventId);
         });
     });
 });

@@ -1,7 +1,7 @@
-import { OddFeedServiceImpl } from "@/services";
+import { oddsFeedServiceImpl } from "@/services";
 import { AppConfigs, Logger, MarbleLoggerService } from "@/interfaces";
 
-describe("OddFeedService", () => {  
+describe("oddsFeedService", () => {  
     const makeResponse = (status: number, data: any) => ({
         status,
         json: async () => data,
@@ -10,7 +10,7 @@ describe("OddFeedService", () => {
     let logService: Logger;
     let appConfigs: AppConfigs;
     let marbleLoggerService: MarbleLoggerService;
-    let service: OddFeedServiceImpl;
+    let service: oddsFeedServiceImpl;
 
     beforeEach(() => {
         (global as any).fetch = jest.fn();
@@ -23,7 +23,7 @@ describe("OddFeedService", () => {
                 password: "pwd",
             },
         };
-        service = new OddFeedServiceImpl({ logService, appConfigs, marbleLoggerService } as any);
+        service = new oddsFeedServiceImpl({ logService, appConfigs, marbleLoggerService } as any);
     });
 
     describe("fetchSchedule", () => {

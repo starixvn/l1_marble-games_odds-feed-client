@@ -28,7 +28,7 @@ describe("dependency-injection", () => {
 			expect(marbleReg.value).toBeDefined();
 		});
 
-        it("registers oddFeedFilter default as a predicate returning true", () => {
+        it("registers oddsFeedFilter default as a predicate returning true", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
 
@@ -37,7 +37,7 @@ describe("dependency-injection", () => {
 
             // Assert
             const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>;
-            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddFeedFilter");
+            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddsFeedFilter");
             expect(filterReg).toBeDefined();
             expect(filterReg.registerType).toBe("value");
             expect(typeof filterReg.value).toBe("function");
@@ -46,7 +46,7 @@ describe("dependency-injection", () => {
             expect(result).toBe(true);
         });
 
-        it("uses default oddFeedFilter when options object is empty", () => {
+        it("uses default oddsFeedFilter when options object is empty", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
 
@@ -55,40 +55,40 @@ describe("dependency-injection", () => {
 
             // Assert
             const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>;
-            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddFeedFilter");
+            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddsFeedFilter");
             expect(filterReg).toBeDefined();
             expect(filterReg.registerType).toBe("value");
             expect(typeof filterReg.value).toBe("function");
             expect(filterReg.value({ eventID: 123 }, 0, [])).toBe(true);
         });
 
-        it("coerces boolean oddFeedFilter=true into a predicate that returns true", () => {
+        it("coerces boolean oddsFeedFilter=true into a predicate that returns true", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
 
             // Act
-            register(diContainer, { oddFeedFilter: true });
+            register(diContainer, { oddsFeedFilter: true });
 
             // Assert
             const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>;
-            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddFeedFilter");
+            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddsFeedFilter");
             expect(filterReg).toBeDefined();
             expect(filterReg.registerType).toBe("value");
             expect(typeof filterReg.value).toBe("function");
             expect(filterReg.value({ eventID: 999 }, 0, [])).toBe(true);
         });
 
-        it("coerces boolean oddFeedFilter=false into a predicate that returns false", () => {
+        it("coerces boolean oddsFeedFilter=false into a predicate that returns false", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
 
             // Act
-            register(diContainer, { oddFeedFilter: false });
+            register(diContainer, { oddsFeedFilter: false });
 
             // Assert
             const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>|
                 Array<any[]>; // tolerate ts typing
-            const filterReg = (calls as Array<[any]>).map(c => c[0]).find(arg => arg && arg.key === "oddFeedFilter");
+            const filterReg = (calls as Array<[any]>).map(c => c[0]).find(arg => arg && arg.key === "oddsFeedFilter");
             expect(filterReg).toBeDefined();
             expect(filterReg.registerType).toBe("value");
             expect(typeof filterReg.value).toBe("function");
@@ -96,17 +96,17 @@ describe("dependency-injection", () => {
             expect(result).toBe(false);
         });
 
-        it("uses provided function oddFeedFilter as-is", () => {
+        it("uses provided function oddsFeedFilter as-is", () => {
             // Arrange
             const diContainer = { register: jest.fn() } as any;
             const predicate = (e: { eventID: number }) => e.eventID === 42;
 
             // Act
-            register(diContainer, { oddFeedFilter: predicate as any });
+            register(diContainer, { oddsFeedFilter: predicate as any });
 
             // Assert
             const calls = (diContainer.register as jest.Mock).mock.calls as Array<[any]>;
-            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddFeedFilter");
+            const filterReg = calls.map(c => c[0]).find(arg => arg && arg.key === "oddsFeedFilter");
             expect(filterReg).toBeDefined();
             expect(filterReg.registerType).toBe("value");
             expect(typeof filterReg.value).toBe("function");
@@ -119,15 +119,15 @@ describe("dependency-injection", () => {
 		it("resolves and initializes services", () => {
             // Arrange
 			const marbleLoggerService = { init: jest.fn() };
-            const oddFeedStore = { initEvent: jest.fn() };
+            const oddsFeedStore = { initEvent: jest.fn() };
             const eventCleanerService = { initEvent: jest.fn() };
-            const oddFeedCron = { start: jest.fn() };
+            const oddsFeedCron = { start: jest.fn() };
             const diContainer = {
                 resolve: jest.fn((key: string) => {
 					if (key === "marbleLoggerService") return marbleLoggerService;
-                    if (key === "oddFeedStore") return oddFeedStore;
+                    if (key === "oddsFeedStore") return oddsFeedStore;
                     if (key === "eventCleanerService") return eventCleanerService;
-                    if (key === "oddFeedCron") return oddFeedCron;
+                    if (key === "oddsFeedCron") return oddsFeedCron;
                     return undefined;
                 }),
             } as any;
@@ -137,9 +137,9 @@ describe("dependency-injection", () => {
 
             // Assert
 			expect(marbleLoggerService.init).toHaveBeenCalled();
-            expect(oddFeedStore.initEvent).toHaveBeenCalled();
+            expect(oddsFeedStore.initEvent).toHaveBeenCalled();
             expect(eventCleanerService.initEvent).toHaveBeenCalled();
-            expect(oddFeedCron.start).toHaveBeenCalled();
+            expect(oddsFeedCron.start).toHaveBeenCalled();
         });
     });
 });

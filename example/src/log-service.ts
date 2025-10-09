@@ -1,11 +1,11 @@
-import { OddFeedEventSource, OddFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odd-feed-client";
+import { oddsFeedEventSource, oddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
 
 interface LogServiceContainer {
-    oddFeedEventSource: OddFeedEventSource;
+    oddsFeedEventSource: oddsFeedEventSource;
 }
 
 export class LogService {
-    private readonly oddFeedEventSource: OddFeedEventSource;
+    private readonly oddsFeedEventSource: oddsFeedEventSource;
 
     private readonly boundHandleEventUpcoming: EventListener;
     private readonly boundHandleEventDetailUpComing: EventDetailListener;
@@ -13,29 +13,29 @@ export class LogService {
     constructor(
         container: LogServiceContainer,
     ) {
-        this.oddFeedEventSource = container.oddFeedEventSource;
+        this.oddsFeedEventSource = container.oddsFeedEventSource;
         this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
         this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
     }
 
     init() {
-        this.oddFeedEventSource.registerEventListener(
-            OddFeedEventName.EventUpcoming,
+        this.oddsFeedEventSource.registerEventListener(
+            oddsFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
-        this.oddFeedEventSource.registerEventDetailEventListener(
-            OddFeedEventName.EventDetailUpComing,
+        this.oddsFeedEventSource.registerEventDetailEventListener(
+            oddsFeedEventName.EventDetailUpComing,
             this.boundHandleEventDetailUpComing
         )
     }
 
     dispose() {
-        this.oddFeedEventSource.unregisterEventListener(
-            OddFeedEventName.EventUpcoming,
+        this.oddsFeedEventSource.unregisterEventListener(
+            oddsFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
-        this.oddFeedEventSource.unregisterEventDetailEventListener(
-            OddFeedEventName.EventDetailUpComing,
+        this.oddsFeedEventSource.unregisterEventDetailEventListener(
+            oddsFeedEventName.EventDetailUpComing,
             this.boundHandleEventDetailUpComing
         )
     }

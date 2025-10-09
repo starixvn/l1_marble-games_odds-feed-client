@@ -3,7 +3,7 @@ import { retry } from "@/utils";
 import { 
     AppConfigs, 
     Logger, 
-    OddFeedService,
+    OddsFeedService,
     MarbleLoggerService
 } from "@/interfaces";
 
@@ -14,7 +14,7 @@ interface OddsFeedServiceContainer {
 
 }
 
-export class OddFeedServiceImpl implements OddFeedService {
+export class OddsFeedServiceImpl implements OddsFeedService {
   private readonly logService: Logger;
   private readonly appConfigs: AppConfigs;
   private readonly marbleLoggerService: MarbleLoggerService;

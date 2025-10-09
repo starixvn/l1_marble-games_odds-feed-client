@@ -1,24 +1,24 @@
-import { OddFeedPullService, OddFeedScheduler, Logger, OddFeedCron } from "@/interfaces";
+import { OddsFeedPullService, OddsFeedScheduler, Logger, OddsFeedCron } from "@/interfaces";
 import * as cron from "@/lib/cron";
 
 
-interface OddFeedCronContainer {
+interface OddsFeedCronContainer {
     logService: Logger;
-    oddFeedPullService: OddFeedPullService;
-    oddFeedScheduler: OddFeedScheduler;
+    oddsFeedPullService: OddsFeedPullService;
+    oddsFeedScheduler: OddsFeedScheduler;
 }
 
-export class OddFeedCronImpl implements OddFeedCron {
+export class OddsFeedCronImpl implements OddsFeedCron {
 
-    constructor(container: OddFeedCronContainer) {
+    constructor(container: OddsFeedCronContainer) {
         this.logService = container.logService;
-        this.oddFeedPullService = container.oddFeedPullService;
-        this.oddFeedScheduler = container.oddFeedScheduler;
+        this.oddsFeedPullService = container.oddsFeedPullService;
+        this.oddsFeedScheduler = container.oddsFeedScheduler;
     }
 
     private readonly logService: Logger;
-    private readonly oddFeedPullService: OddFeedPullService;
-    private readonly oddFeedScheduler: OddFeedScheduler;
+    private readonly oddsFeedPullService: OddsFeedPullService;
+    private readonly oddsFeedScheduler: OddsFeedScheduler;
     
     public async start() {
         this.schedule();
@@ -41,13 +41,13 @@ export class OddFeedCronImpl implements OddFeedCron {
     }
     
     public async schedule() {
-        const upcomingEvents = await this.oddFeedPullService.pullUpcoming();
+        const upcomingEvents = await this.oddsFeedPullService.pullUpcoming();
         upcomingEvents.forEach( async (event) => {
-            const eventWithDetails = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
+            const eventWithDetails = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID);
             if (!eventWithDetails) {
                 return;
             }
-            this.oddFeedScheduler.scheduleEvent(eventWithDetails);
+            this.oddsFeedScheduler.scheduleEvent(eventWithDetails);
         });
     }
 }

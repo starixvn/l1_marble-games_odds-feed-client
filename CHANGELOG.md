@@ -1,52 +1,25 @@
-# [1.4.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.3.0...v1.4.0) (2025-10-06)
-
-
-### Bug Fixes
-
-* node 24 compatibility ([43fca27](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/43fca271ea88a9ab4190fc666a1f37dcf4893dcb))
-* version mismatch ([08059e9](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/08059e98cb91b4f22650148f3ba5e99dedc26e36))
+# [1.2.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v1.1.0...v1.2.0) (2025-10-02)
 
 
 ### Features
 
-* support event detail upcoming ([256cad6](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/256cad6ffe14cd7eb1c7a229502ce736f0152e56))
+* support awilix INJECTION MODE PROXY ([2cb3624](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/2cb3624a3d500d1d1758ad0baa0122411be95c8f))
 
-# [1.3.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.2.1...v1.3.0) (2025-10-06)
-
-
-### Features
-
-* add new marble log service for odd feed ([628bf83](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/628bf838b49f2eb9987ea5800f1afcb1c5678d09))
-
-## [1.2.1](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.2.0...v1.2.1) (2025-10-02)
-
-
-### Bug Fixes
-
-* container shape diff awilix adapter ([72f92e9](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/72f92e9d1598e0984a514293877b50716a18dab4))
-
-# [1.2.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v1.1.0...v1.2.0) (2025-10-02)
+# [1.1.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v[secure]...v1.1.0) (2025-10-01)
 
 
 ### Features
 
-* support awilix INJECTION MODE PROXY ([2cb3624](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/2cb3624a3d500d1d1758ad0baa0122411be95c8f))
-
-# [1.1.0](https://git3.nexdev.net/l1/marble-games/odd-feed-client/compare/v[secure]...v1.1.0) (2025-10-01)
-
-
-### Features
-
-* completed feature - ODD FEED FILTER ([989cd79](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/989cd79bd614c996b6b45b1bfc18877b9ca0d05e))
+* completed feature - ODD FEED FILTER ([989cd79](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/989cd79bd614c996b6b45b1bfc18877b9ca0d05e))
 
 # [secure] (2025-10-01)
 
 
 ### Bug Fixes
 
-* unit tests ([cdbd72f](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/cdbd72fb20b397e96edfe5a7a19a7f4657f545db))
+* unit tests ([cdbd72f](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/cdbd72fb20b397e96edfe5a7a19a7f4657f545db))
 
 
 ### Features
 
-* init project ([2d9c4cf](https://git3.nexdev.net/l1/marble-games/odd-feed-client/commit/2d9c4cff894d702c08489d064b50122305182f35))
+* init project ([2d9c4cf](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/2d9c4cff894d702c08489d064b50122305182f35))

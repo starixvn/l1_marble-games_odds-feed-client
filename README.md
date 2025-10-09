@@ -9,11 +9,11 @@ Event-based odd feed client for Marble games. Provides a small set of services t
 ### Installation
 
 ```bash
-npm install odd-feed-client
+npm install odds-feed-client
 # or
-yarn add odd-feed-client
+yarn add odds-feed-client
 # or
-pnpm add odd-feed-client
+pnpm add odds-feed-client
 ```
 
 If you use the Awilix adapter shown below, also install `awilix` (it is already a dependency here, so this is optional for most setups):
@@ -28,9 +28,9 @@ The `example/` folder contains a runnable sample. Below is the minimal setup usi
 
 ```ts
 import { createContainer, asClass, asValue } from "awilix";
-import { register, init } from "odd-feed-client/dependency-injection";
-import { AwilixDIContainer } from "odd-feed-client/awilix";
-import type { AppConfigs, Logger, OddFeedEventSource, OddFeedEventName } from "odd-feed-client";
+import { register, init } from "odds-feed-client/dependency-injection";
+import { AwilixDIContainer } from "odds-feed-client/awilix";
+import type { AppConfigs, Logger, oddsFeedEventSource, oddsFeedEventName } from "odds-feed-client";
 
 // 1) App configuration
 const appConfigs: AppConfigs = {
@@ -53,15 +53,15 @@ container.register({
     logger: asClass(ConsoleLogger),
 });
 
-// 4) Wrap as a DI container and register odd-feed services
+// 4) Wrap as a DI container and register odds-feed services
 const di = new AwilixDIContainer(container);
 register(di);
 init(di); // starts cron and internal listeners
 
 // 5) (Optional) Listen to feed events
-const eventSource = di.resolve<OddFeedEventSource>("oddFeedEventSource");
+const eventSource = di.resolve<oddsFeedEventSource>("oddsFeedEventSource");
 eventSource.registerEventListener(
-    OddFeedEventName.EventUpcoming,
+    oddsFeedEventName.EventUpcoming,
     ({ event }) => {
         console.log("Upcoming event:", event.eventID);
     }
@@ -77,15 +77,15 @@ This will:
 ### Reading from the store
 
 ```ts
-import type { OddFeedStore } from "odd-feed-client";
+import type { oddsFeedStore } from "odds-feed-client";
 
-const store = di.resolve<OddFeedStore>("oddFeedStore");
+const store = di.resolve<oddsFeedStore>("oddsFeedStore");
 const event = store.getEventByGameId("<game-id>", /* eventId */ 123456);
 ```
 
 ### Odd feed filter (container value)
 
-`OddFeedPullService` can take an optional filter to decide which events to keep. Register a value named `oddFeedFilter` in your container. It can be either:
+`oddsFeedPullService` can take an optional filter to decide which events to keep. Register a value named `oddsFeedFilter` in your container. It can be either:
 
 - a function `(event) => boolean` (predicate), or
 - a boolean (`true` to include all, `false` to include none).
@@ -95,19 +95,19 @@ If you don't register it, all events are included by default.
 ```ts
 // Keep all events (default behavior example)
 container.register({
-    oddFeedFilter: asValue(true), // include all events
+    oddsFeedFilter: asValue(true), // include all events
 });
 
 // Example: only include events for specific IDs
 container.register({
-    oddFeedFilter: asValue((event) => [111, 222, 333].includes(event.eventID)),
+    oddsFeedFilter: asValue((event) => [111, 222, 333].includes(event.eventID)),
 });
 ```
 
 
 ### Without Awilix
 
-You can bring your own DI by implementing `DiContainer` and passing it to `register` and `init`. See `odd-feed-client/container` for the minimal required interface.
+You can bring your own DI by implementing `DiContainer` and passing it to `register` and `init`. See `odds-feed-client/container` for the minimal required interface.
 
 ### Example app
 
@@ -115,6 +115,6 @@ Check `example/` for a complete, runnable setup that mirrors the snippets above.
 
 ### Exports
 
-- `odd-feed-client`: re-exports interfaces and domain types
-- `odd-feed-client/dependency-injection`: `register(diContainer)`, `init(diContainer)`
-- `odd-feed-client/awilix`: `AwilixDIContainer` adapter
+- `odds-feed-client`: re-exports interfaces and domain types
+- `odds-feed-client/dependency-injection`: `register(diContainer)`, `init(diContainer)`
+- `odds-feed-client/awilix`: `AwilixDIContainer` adapter

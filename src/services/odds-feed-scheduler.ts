@@ -1,39 +1,39 @@
-import { Event as OddFeedEvent } from "@/domain";
+import { Event as oddsFeedEvent } from "@/domain";
 import { isNullOrUndefinedOrEmpty } from "@/utils";
 import { 
-    OddFeedPullService, 
+    OddsFeedPullService, 
     Scheduler, 
-    OddFeedEventName, 
-    OddFeedEventSource,
-    OddFeedScheduler,
+    OddsFeedEventName, 
+    OddsFeedEventSource,
+    OddsFeedScheduler,
     Logger
 } from "@/interfaces";
 
-interface OddFeedSchedulerContainer {
-    oddFeedEventSource: OddFeedEventSource<OddFeedEvent>;
+interface OddsFeedSchedulerContainer {
+    oddsFeedEventSource: OddsFeedEventSource<oddsFeedEvent>;
     scheduler: Scheduler;
-    oddFeedPullService: OddFeedPullService;
+    oddsFeedPullService: OddsFeedPullService;
     logService: Logger;
 }
 
-export class OddFeedSchedulerImpl implements OddFeedScheduler {
-    private readonly oddFeedEventSource: OddFeedEventSource<OddFeedEvent>;
+export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
+    private readonly oddsFeedEventSource: OddsFeedEventSource<oddsFeedEvent>;
     private readonly scheduler: Scheduler;
-    private readonly oddFeedPullService: OddFeedPullService;
+    private readonly oddsFeedPullService: OddsFeedPullService;
     private readonly logService: Logger;
 
-    constructor(container: OddFeedSchedulerContainer) {
-        this.oddFeedEventSource = container.oddFeedEventSource;
+    constructor(container: OddsFeedSchedulerContainer) {
+        this.oddsFeedEventSource = container.oddsFeedEventSource;
         this.scheduler = container.scheduler;
-        this.oddFeedPullService = container.oddFeedPullService;
+        this.oddsFeedPullService = container.oddsFeedPullService;
         this.logService = container.logService;
     }
 
-    public scheduleEventUpcoming(event: OddFeedEvent) {
-        this.oddFeedEventSource.onEventUpcoming(event);
+    public scheduleEventUpcoming(event: oddsFeedEvent) {
+        this.oddsFeedEventSource.emitEventUpcoming(event);
     }
 
-    public scheduleEvent(event: OddFeedEvent) {
+    public scheduleEvent(event: oddsFeedEvent) {
         this.scheduleEventUpcoming(event);
         this.scheduleEventStart(event);
         event.eventDetails.forEach((_, index) => {
@@ -44,9 +44,9 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         });
     }
 
-    protected scheduleEventStart(event: OddFeedEvent) {
+    protected scheduleEventStart(event: oddsFeedEvent) {
         const eventStart = new Date(event.scheduleStartTs);
-        const key = this.composeKey(OddFeedEventName.EventStart, event.eventID, 0);
+        const key = this.composeKey(OddsFeedEventName.EventStart, event.eventID, 0);
         this.scheduler.schedule(
             eventStart, 
             this.handleEventStart.bind(this, event), {
@@ -54,13 +54,13 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         });
     }
 
-    protected scheduleEventDetailUpComing(event: OddFeedEvent, index: number) {
-        this.oddFeedEventSource.onEventDetailUpComing(event, index);
+    protected scheduleEventDetailUpComing(event: oddsFeedEvent, index: number) {
+        this.oddsFeedEventSource.emitEventDetailUpcoming(event, index);
     }
 
-    protected scheduleEventDetailStart(event: OddFeedEvent, index: number) {
+    protected scheduleEventDetailStart(event: oddsFeedEvent, index: number) {
         const eventDetailStart = new Date(event.eventDetails[index].scheduleStartTs);
-        const key = this.composeKey(OddFeedEventName.EventDetailStart, event.eventID, index);
+        const key = this.composeKey(OddsFeedEventName.EventDetailStart, event.eventID, index);
         this.scheduler.schedule(
             eventDetailStart,
             this.handleEventDetailStart.bind(this, event, index), {
@@ -68,9 +68,9 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         });
     }
 
-    protected scheduleEventDetailOddsAvailable(event: OddFeedEvent, index: number) {
+    protected scheduleEventDetailOddsAvailable(event: oddsFeedEvent, index: number) {
         const eventDetailOddsAvailable = new Date(event.eventDetails[index].oddsAvailableTs);
-        const key = this.composeKey(OddFeedEventName.EventDetailOddsAvailable, event.eventID, index);
+        const key = this.composeKey(OddsFeedEventName.EventDetailOddsAvailable, event.eventID, index);
         this.scheduler.schedule(
             eventDetailOddsAvailable, 
             this.handleEventDetailOddsAvailable.bind(this, event, index), {
@@ -78,9 +78,9 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         });
     }
 
-    protected scheduleEventDetailResultsAvailable(event: OddFeedEvent, index: number) {
+    protected scheduleEventDetailResultsAvailable(event: oddsFeedEvent, index: number) {
         const eventDetailResultsAvailable = new Date(event.eventDetails[index].resultsAvailableTs);
-        const key = this.composeKey(OddFeedEventName.EventDetailResultsAvailable, event.eventID, index);
+        const key = this.composeKey(OddsFeedEventName.EventDetailResultsAvailable, event.eventID, index);
         this.scheduler.schedule(
             eventDetailResultsAvailable, 
             this.handleEventDetailResultsAvailable.bind(this, event, index), {
@@ -88,31 +88,31 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         });
     }
 
-    protected async handleEventStart(event: OddFeedEvent) {
+    protected async handleEventStart(event: oddsFeedEvent) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
         }
-        this.oddFeedEventSource.onEventStart(updatedEvent);
+        this.oddsFeedEventSource.emitEventStart(updatedEvent);
     }
 
-    protected async handleEventDetailStart(event: OddFeedEvent, index: number) {
+    protected async handleEventDetailStart(event: oddsFeedEvent, index: number) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
         }
-        this.oddFeedEventSource.onEventDetailStart(updatedEvent, index);
+        this.oddsFeedEventSource.emitEventDetailStart(updatedEvent, index);
     }
 
-    protected async handleEventDetailOddsAvailable(event: OddFeedEvent, index: number) {
+    protected async handleEventDetailOddsAvailable(event: oddsFeedEvent, index: number) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
         }
-        this.oddFeedEventSource.onEventDetailOddsAvailable(updatedEvent, index);
+        this.oddsFeedEventSource.emitEventDetailOddsAvailable(updatedEvent, index);
     }
     
-    protected async handleEventDetailResultsAvailable(event: OddFeedEvent, index: number, retry = 3) {
+    protected async handleEventDetailResultsAvailable(event: oddsFeedEvent, index: number, retry = 3) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (retry < 0) {
             console.error(`Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`);
@@ -129,11 +129,11 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
             return;
         }
 
-        this.oddFeedEventSource.onEventDetailResultsAvailable(updatedEvent, index);
+        this.oddsFeedEventSource.emitEventDetailResultsAvailable(updatedEvent, index);
     }
 
-    protected async pullEventAndUpdateStore(event: OddFeedEvent) {
-        const updatedEvent = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
+    protected async pullEventAndUpdateStore(event: oddsFeedEvent) {
+        const updatedEvent = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID);
             if (!updatedEvent) {
                 this.logService.logError(`Failed to get event details for event ${event.eventID}`);
                 return undefined;
@@ -141,7 +141,7 @@ export class OddFeedSchedulerImpl implements OddFeedScheduler {
         return updatedEvent;
     }
     
-    private composeKey(eventName: OddFeedEventName, eventId: number, index: number) {
+    private composeKey(eventName: OddsFeedEventName, eventId: number, index: number) {
         return `${eventName}-${eventId}-${index}`;
     }
 }

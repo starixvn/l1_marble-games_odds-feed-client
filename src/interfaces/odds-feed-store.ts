@@ -1,7 +1,7 @@
 import { SystemNotification } from "@/interfaces";
 import { Event } from "@/domain";
 
-export interface OddFeedStore {
+export interface OddsFeedStore {
     initEvent(): void;
     dispose(): void;
     handleSystemDataCleanup(notification: SystemNotification): void;
