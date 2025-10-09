@@ -260,6 +260,29 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Replace with MarbleLoggerService calls
 - **Files**: `src/services/odd-feed-scheduler.ts`, `src/services/odd-feed-store.ts`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before (src/services/odd-feed-scheduler.ts:118)
+console.error(
+  `Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`
+);
+
+// ✅ After
+this.logService.error(
+  `Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`
+);
+
+// ❌ Before (src/services/odd-feed-store.ts:56)
+console.log(`Cleaning up event ${eventId} for game ${gameId}`);
+
+// ✅ After
+this.marbleLoggerService.log(
+  `Cleaning up event ${eventId} for game ${gameId}`,
+  { eventId }
+);
+```
+
 #### 2. **Type Safety Issues** (Lines: `src/container/awilix/index.ts:79`, `src/services/scheduler.ts:57`)
 
 - **Issue**: `any` types in critical paths
@@ -267,11 +290,55 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Add proper type definitions for container cradle and callback args
 - **Files**: `src/container/awilix/index.ts`, `src/services/scheduler.ts`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before (src/container/awilix/index.ts:79)
+? reg.inject((cradle: any) => ({
+
+// ✅ After
+interface ContainerCradle {
+  resolve: (key: string) => any;
+  [key: string]: any;
+}
+? reg.inject((cradle: ContainerCradle) => ({
+
+// ❌ Before (src/services/scheduler.ts:57)
+return (...args: any[]) => {
+
+// ✅ After
+interface ScheduledCallback {
+  (...args: unknown[]): void | Promise<void>;
+}
+return (...args: unknown[]) => {
+```
+
 #### 3. **Error Handling Inconsistency**
 
 - **Issue**: Mixed error handling patterns (console.error vs MarbleLoggerService)
 - **Impact**: Inconsistent error reporting
 - **Fix**: Standardize on MarbleLoggerService for all error logging
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Mixed patterns
+try {
+  // some operation
+} catch (error) {
+  console.error("Error occurred:", error); // Inconsistent
+  this.marbleLoggerService.error(error); // Also inconsistent
+}
+
+// ✅ After - Standardized
+try {
+  // some operation
+} catch (error) {
+  this.marbleLoggerService.error(error as Error, {
+    eventId: this.currentEventId,
+  });
+}
+```
 
 ### Medium Priority Improvements
 
@@ -282,6 +349,67 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Implement TTL-based cleanup and memory monitoring
 - **Files**: `src/services/odd-feed-store.ts`, `src/services/event-cleaner-service.ts`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - No TTL management
+export class OddFeedStoreImpl {
+  private readonly eventByGameId: Record<string, Record<number, Event>> = {};
+
+  setEventByGameId(gameId: string, eventId: number, event: Event): void {
+    if (!this.eventByGameId[gameId]) {
+      this.eventByGameId[gameId] = {};
+    }
+    this.eventByGameId[gameId][eventId] = event;
+  }
+}
+
+// ✅ After - With TTL and memory monitoring
+interface StoredEvent {
+  event: Event;
+  timestamp: number;
+  ttl: number;
+}
+
+export class OddFeedStoreImpl {
+  private readonly eventByGameId: Record<string, Record<number, StoredEvent>> =
+    {};
+  private readonly maxMemoryMB = 100;
+
+  setEventByGameId(
+    gameId: string,
+    eventId: number,
+    event: Event,
+    ttl = 3600000
+  ): void {
+    if (!this.eventByGameId[gameId]) {
+      this.eventByGameId[gameId] = {};
+    }
+
+    this.eventByGameId[gameId][eventId] = {
+      event,
+      timestamp: Date.now(),
+      ttl,
+    };
+
+    this.cleanupExpiredEvents();
+    this.monitorMemoryUsage();
+  }
+
+  private cleanupExpiredEvents(): void {
+    const now = Date.now();
+    Object.keys(this.eventByGameId).forEach((gameId) => {
+      Object.keys(this.eventByGameId[gameId]).forEach((eventId) => {
+        const stored = this.eventByGameId[gameId][eventId];
+        if (now - stored.timestamp > stored.ttl) {
+          delete this.eventByGameId[gameId][eventId];
+        }
+      });
+    });
+  }
+}
+```
+
 #### 5. **Configuration Management**
 
 - **Issue**: Hardcoded values (MAX*LENGTH = 50, cron expression "*/30 \_ \* \* \* \*")
@@ -289,12 +417,80 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Make configurable via AppConfigs interface
 - **Files**: `src/services/event-cleaner-service.ts`, `src/services/odd-feed-cron.ts`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - Hardcoded values
+const MAX_LENGTH = 50;
+const cronExpression = "*/30 * * * * *";
+
+// ✅ After - Configurable via AppConfigs
+interface AppConfigs {
+  oddsFeedAPI: { /* existing */ };
+  sentry: { /* existing */ };
+  eventCleaner: {
+    maxQueueLength: number;
+  };
+  cron: {
+    scheduleInterval: string;
+  };
+}
+
+// In EventCleanerServiceImpl
+constructor(container: EventCleanerServiceContainer) {
+  this.maxLength = container.appConfigs.eventCleaner.maxQueueLength;
+}
+
+// In OddFeedCronImpl
+public scheduleNextEventsCron() {
+  const cronExpression = this.appConfigs.cron.scheduleInterval;
+  // ...
+}
+```
+
 #### 6. **Async/Await Patterns**
 
 - **Issue**: Mixed Promise handling patterns
 - **Impact**: Potential race conditions and error handling issues
 - **Fix**: Standardize on async/await with proper error boundaries
 - **Files**: `src/services/odd-feed-cron.ts:45-51`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Mixed patterns with potential race conditions
+public async schedule() {
+  const upcomingEvents = await this.oddFeedPullService.pullUpcoming();
+  upcomingEvents.forEach(async (event) => {  // ❌ forEach with async
+    const eventWithDetails = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
+    if (!eventWithDetails) {
+      return;
+    }
+    this.oddFeedScheduler.scheduleEvent(eventWithDetails);
+  });
+}
+
+// ✅ After - Proper async handling
+public async schedule() {
+  try {
+    const upcomingEvents = await this.oddFeedPullService.pullUpcoming();
+
+    // Process events sequentially to avoid overwhelming the API
+    for (const event of upcomingEvents) {
+      try {
+        const eventWithDetails = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
+        if (eventWithDetails) {
+          this.oddFeedScheduler.scheduleEvent(eventWithDetails);
+        }
+      } catch (error) {
+        this.logService.logError(`Failed to process event ${event.eventID}: ${error.message}`);
+      }
+    }
+  } catch (error) {
+    this.logService.logError(`Failed to pull upcoming events: ${error.message}`);
+  }
+}
+```
 
 ### Low Priority Enhancements
 
@@ -365,12 +561,68 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Rename to `emitEventStart()`, `emitEventUpcoming()` for clarity
 - **Files**: `src/services/odd-feed-event-source.ts:51-84`, `src/interfaces/odd-feed-event-source.ts:49-55`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - Confusing naming
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  onEventStart: (event: TEvent) => void;        // ❌ Sounds like listener
+  onEventUpcoming: (event: TEvent) => void;     // ❌ Sounds like listener
+  onDataCleanup: (eventID: number) => void;     // ❌ Sounds like listener
+}
+
+// ✅ After - Clear naming
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  emitEventStart: (event: TEvent) => void;      // ✅ Clearly emits
+  emitEventUpcoming: (event: TEvent) => void;   // ✅ Clearly emits
+  emitDataCleanup: (eventID: number) => void;   // ✅ Clearly emits
+}
+
+// Implementation
+public emitEventStart(event: TEvent) {
+  const key = OddFeedEventName.EventStart;
+  this.emit(key, { event });
+}
+```
+
 #### 17. **Inconsistent EventEmitter API** (`src/services/odd-feed-event-source.ts`)
 
 - **Issue**: Uses `register/unregister` instead of standard EventEmitter `on/off` methods
 - **Impact**: Inconsistent with Node.js EventEmitter conventions
 - **Fix**: Rename to `on/off` methods for consistency with EventEmitter API
 - **Files**: `src/services/odd-feed-event-source.ts:20-49`, `src/interfaces/odd-feed-event-source.ts:40-48`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Non-standard naming
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  registerWildcardEventListener: (listener: CatchAllEventListener<TEvent>) => void;
+  unregisterWildcardEventListener: (listener: CatchAllEventListener<TEvent>) => void;
+  registerEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  unregisterEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+}
+
+// ✅ After - Standard EventEmitter naming
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  on: (eventName: OddFeedEventName | SystemEventName, listener: Function) => void;
+  off: (eventName: OddFeedEventName | SystemEventName, listener: Function) => void;
+  // Or more specific:
+  onWildcard: (listener: CatchAllEventListener<TEvent>) => void;
+  offWildcard: (listener: CatchAllEventListener<TEvent>) => void;
+  onEvent: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  offEvent: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+}
+
+// Implementation
+public on(eventName: OddFeedEventName | SystemEventName, listener: Function) {
+  this.oddFeedEventSource.on(eventName, listener);
+}
+
+public off(eventName: OddFeedEventName | SystemEventName, listener: Function) {
+  this.oddFeedEventSource.off(eventName, listener);
+}
+```
 
 #### 18. **Misleading "Notification" Naming** (`src/interfaces/odd-feed-event-source.ts`)
 
@@ -379,12 +631,96 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Rename to `EventPayload`, `EventDetailPayload`, `SystemPayload`
 - **Files**: `src/interfaces/odd-feed-event-source.ts:17-30`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - Misleading "Notification" naming
+export interface EventDetailNotification<TEvent extends Event = Event> {
+  event: TEvent;
+  index: number;
+}
+
+export interface EventNotification<TEvent extends Event = Event> {
+  event: TEvent;
+}
+
+export interface SystemNotification {
+  eventID: number;
+}
+
+export type Notification<TEvent extends Event = Event> =
+  | EventNotification<TEvent>
+  | EventDetailNotification<TEvent>
+  | SystemNotification;
+
+// ✅ After - Clear "Payload" naming
+export interface EventDetailPayload<TEvent extends Event = Event> {
+  event: TEvent;
+  index: number;
+}
+
+export interface EventPayload<TEvent extends Event = Event> {
+  event: TEvent;
+}
+
+export interface SystemPayload {
+  eventID: number;
+}
+
+export type EventData<TEvent extends Event = Event> =
+  | EventPayload<TEvent>
+  | EventDetailPayload<TEvent>
+  | SystemPayload;
+
+// Updated listener types
+export type CatchAllEventListener<TEvent extends Event = Event> = (
+  eventName: OddFeedEventName,
+  payload: EventData<TEvent>
+) => void;
+```
+
 #### 19. **Inconsistent Property Naming** (`src/services/odd-feed-event-source.ts`)
 
 - **Issue**: Property `OddFeedEventSource` (PascalCase) should be `oddFeedEventSource` (camelCase)
 - **Impact**: Inconsistent with TypeScript/JavaScript naming conventions
 - **Fix**: Rename to camelCase following standard conventions
 - **Files**: `src/services/odd-feed-event-source.ts:15,18`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - PascalCase property
+export class OddFeedEventSourceImpl<TEvent extends Event = Event> {
+  public OddFeedEventSource: EventEmitter; // ❌ PascalCase
+
+  constructor() {
+    this.OddFeedEventSource = new EventEmitter(); // ❌ PascalCase
+  }
+
+  public registerEventListener(
+    eventName: OddFeedEventName,
+    listener: EventListener<TEvent>
+  ) {
+    this.OddFeedEventSource.on(eventName, listener); // ❌ PascalCase
+  }
+}
+
+// ✅ After - camelCase property
+export class OddFeedEventSourceImpl<TEvent extends Event = Event> {
+  public oddFeedEventSource: EventEmitter; // ✅ camelCase
+
+  constructor() {
+    this.oddFeedEventSource = new EventEmitter(); // ✅ camelCase
+  }
+
+  public registerEventListener(
+    eventName: OddFeedEventName,
+    listener: EventListener<TEvent>
+  ) {
+    this.oddFeedEventSource.on(eventName, listener); // ✅ camelCase
+  }
+}
+```
 
 #### 20. **Redundant Event Detail Registration** (`src/services/odd-feed-event-source.ts`)
 
@@ -393,6 +729,35 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Remove redundant method, use single `registerEventListener` for all event types
 - **Files**: `src/services/odd-feed-event-source.ts:35-41`, `src/interfaces/odd-feed-event-source.ts:45-46`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - Redundant methods
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  registerEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  registerEventDetailEventListener: (eventName: OddFeedEventName, listener: EventDetailListener<TEvent>) => void;  // ❌ Redundant
+  unregisterEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  unregisterEventDetailEventListener: (eventName: OddFeedEventName, listener: EventDetailListener<TEvent>) => void;  // ❌ Redundant
+}
+
+// Implementation
+public registerEventDetailEventListener(eventName: OddFeedEventName, listener: EventDetailListener<TEvent>) {
+  this.OddFeedEventSource.on(eventName, listener);  // ❌ Same as registerEventListener
+}
+
+// ✅ After - Simplified API
+export type OddFeedEventSource<TEvent extends Event = Event> = {
+  registerEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  unregisterEventListener: (eventName: OddFeedEventName, listener: EventListener<TEvent>) => void;
+  // Remove redundant methods
+}
+
+// Implementation - Single method handles all event types
+public registerEventListener(eventName: OddFeedEventName, listener: EventListener<TEvent>) {
+  this.oddFeedEventSource.on(eventName, listener);
+}
+```
+
 #### 21. **Inconsistent Event Name Casing** (`src/interfaces/odd-feed-event-source.ts`)
 
 - **Issue**: Mixed casing in event names (`EventDetailUpComing` vs `EventUpcoming`)
@@ -400,12 +765,100 @@ oddFeedFilter -> Function (configurable)
 - **Fix**: Standardize to consistent casing (e.g., `EventDetailUpcoming`)
 - **Files**: `src/interfaces/odd-feed-event-source.ts:6,10`
 
+**Example Fix:**
+
+```typescript
+// ❌ Before - Inconsistent casing
+export enum OddFeedEventName {
+  Wildcard = "*",
+  EventStart = "event.ScheduleStart",
+  EventDetailUpComing = "eventDetail.UpComing", // ❌ Mixed case
+  EventDetailStart = "eventDetail.ScheduleStart",
+  EventDetailOddsAvailable = "eventDetail.OddsAvailable",
+  EventDetailResultsAvailable = "eventDetail.ResultsAvailable",
+  EventUpcoming = "event.Upcoming", // ❌ Different casing
+}
+
+// ✅ After - Consistent casing
+export enum OddFeedEventName {
+  Wildcard = "*",
+  EventStart = "event.ScheduleStart",
+  EventDetailUpcoming = "eventDetail.Upcoming", // ✅ Consistent
+  EventDetailStart = "eventDetail.ScheduleStart",
+  EventDetailOddsAvailable = "eventDetail.OddsAvailable",
+  EventDetailResultsAvailable = "eventDetail.ResultsAvailable",
+  EventUpcoming = "event.Upcoming", // ✅ Consistent
+}
+```
+
 #### 22. **Generic Type Redundancy** (`src/interfaces/odd-feed-event-source.ts`)
 
 - **Issue**: Repetitive `<TEvent extends Event = Event>` throughout interfaces
 - **Impact**: Verbose and hard to maintain
 - **Fix**: Create base types or use type aliases to reduce repetition
 - **Files**: `src/interfaces/odd-feed-event-source.ts:17-38`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Repetitive generic types
+export interface EventDetailNotification<TEvent extends Event = Event> {
+  event: TEvent;
+  index: number;
+}
+
+export interface EventNotification<TEvent extends Event = Event> {
+  event: TEvent;
+}
+
+export type CatchAllEventListener<TEvent extends Event = Event> = (
+  eventName: OddFeedEventName,
+  notification: Notification<TEvent>
+) => void;
+
+export type EventDetailListener<TEvent extends Event = Event> = (
+  notification: EventDetailNotification<TEvent>
+) => void;
+
+export type EventListener<TEvent extends Event = Event> = (
+  notification: EventNotification<TEvent> | EventDetailNotification<TEvent>
+) => void;
+
+// ✅ After - Using type aliases
+type EventType<TEvent extends Event = Event> = TEvent;
+
+export interface EventDetailPayload<TEvent extends Event = Event> {
+  event: EventType<TEvent>;
+  index: number;
+}
+
+export interface EventPayload<TEvent extends Event = Event> {
+  event: EventType<TEvent>;
+}
+
+// Or even better - create a base type
+type BaseEventType = Event;
+
+export interface EventDetailPayload<
+  TEvent extends BaseEventType = BaseEventType
+> {
+  event: TEvent;
+  index: number;
+}
+
+export interface EventPayload<TEvent extends BaseEventType = BaseEventType> {
+  event: TEvent;
+}
+
+// Create reusable listener types
+type BaseEventListener<TEvent extends BaseEventType = BaseEventType> = (
+  payload: EventPayload<TEvent>
+) => void;
+
+type BaseEventDetailListener<TEvent extends BaseEventType = BaseEventType> = (
+  payload: EventDetailPayload<TEvent>
+) => void;
+```
 
 ---
 
