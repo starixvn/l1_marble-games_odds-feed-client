@@ -3,7 +3,7 @@ jest.mock("@/lib/cron", () => {
     const CronJob = jest.fn().mockImplementation((_expr: any, _onTick: any, _onComplete: any) => ({ start }));
     return { CronJob };
 });
-import { oddsFeedCronImpl } from "@/services";
+import { OddsFeedCronImpl as oddsFeedCronImpl } from "@/services";
 import * as cronModule from "@/lib/cron";
 
 describe("oddsFeedCron", () => {

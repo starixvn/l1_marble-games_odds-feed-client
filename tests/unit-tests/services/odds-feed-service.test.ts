@@ -1,4 +1,4 @@
-import { oddsFeedServiceImpl } from "@/services";
+import { OddsFeedServiceImpl as oddsFeedServiceImpl } from "@/services";
 import { AppConfigs, Logger, MarbleLoggerService } from "@/interfaces";
 
 describe("oddsFeedService", () => {  

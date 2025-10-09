@@ -1,4 +1,4 @@
-import { oddsFeedPullServiceImpl } from "@/services";
+import { OddsFeedPullServiceImpl as oddsFeedPullServiceImpl } from "@/services";
 import { idHelper } from "@/utils";
 
 describe("oddsFeedPullService", () => {

@@ -1,5 +1,5 @@
-import { oddsFeedSchedulerImpl } from "@/services";
-import { oddsFeedEventName } from "@/interfaces";
+import { OddsFeedSchedulerImpl as oddsFeedSchedulerImpl } from "@/services";
+import { OddsFeedEventName as oddsFeedEventName } from "@/interfaces";
 
 describe("oddsFeedScheduler", () => {
     const makeEvent = () => {
@@ -21,7 +21,7 @@ describe("oddsFeedScheduler", () => {
     describe("scheduleEventUpcoming", () => {
         it("emits upcoming event", () => {
             // Arrange
-            const oddsFeedEventSource = { onEventUpcoming: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventUpcoming: jest.fn() } as any;
             const scheduler = { schedule: jest.fn() } as any;
             const oddsFeedPullService = { pullEventWithEventDetails: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
@@ -32,14 +32,14 @@ describe("oddsFeedScheduler", () => {
             svc.scheduleEventUpcoming(event);
 
             // Assert
-            expect(oddsFeedEventSource.onEventUpcoming).toHaveBeenCalledWith(event);
+            expect(oddsFeedEventSource.emitEventUpcoming).toHaveBeenCalledWith(event);
         });
     });
 
     describe("scheduleEvent", () => {
         it("schedules start and detail events with correct keys", () => {
             // Arrange
-            const oddsFeedEventSource = { onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const oddsFeedPullService = { pullEventWithEventDetails: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
@@ -57,14 +57,14 @@ describe("oddsFeedScheduler", () => {
             expect(keys).toContain(`${oddsFeedEventName.EventDetailResultsAvailable}-${event.eventID}-0`);
 
             // upcoming events are emitted immediately, not scheduled
-            expect(oddsFeedEventSource.onEventUpcoming).toHaveBeenCalledWith(event);
-            expect(oddsFeedEventSource.onEventDetailUpComing).toHaveBeenCalledWith(event, 0);
-            expect(oddsFeedEventSource.onEventDetailUpComing).toHaveBeenCalledWith(event, 1);
+            expect(oddsFeedEventSource.emitEventUpcoming).toHaveBeenCalledWith(event);
+            expect(oddsFeedEventSource.emitEventDetailUpcoming).toHaveBeenCalledWith(event, 0);
+            expect(oddsFeedEventSource.emitEventDetailUpcoming).toHaveBeenCalledWith(event, 1);
         });
 
         it("invokes scheduled start handler to emit when details available", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventStart: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -78,12 +78,12 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventStart).toHaveBeenCalledWith(updatedEvent);
+            expect(oddsFeedEventSource.emitEventStart).toHaveBeenCalledWith(updatedEvent);
         });
 
         it("invokes scheduled detail start handler to emit when details available", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailStart: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -97,12 +97,12 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailStart).toHaveBeenCalledWith(updatedEvent, 0);
+            expect(oddsFeedEventSource.emitEventDetailStart).toHaveBeenCalledWith(updatedEvent, 0);
         });
 
         it("invokes scheduled odds available handler to emit when details available", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailOddsAvailable: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -116,12 +116,12 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailOddsAvailable).toHaveBeenCalledWith(updatedEvent, 0);
+            expect(oddsFeedEventSource.emitEventDetailOddsAvailable).toHaveBeenCalledWith(updatedEvent, 0);
         });
 
         it("invokes results available handler with retries until result is present", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailResultsAvailable: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -137,12 +137,12 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailResultsAvailable).toHaveBeenCalledWith(third, 0);
+            expect(oddsFeedEventSource.emitEventDetailResultsAvailable).toHaveBeenCalledWith(third, 0);
         });
 
         it("does not emit start when no updated event is returned", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventStart: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -155,13 +155,13 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventStart).not.toHaveBeenCalled();
+            expect(oddsFeedEventSource.emitEventStart).not.toHaveBeenCalled();
             expect(logService.logError).toHaveBeenCalled();
         });
 
         it("does not emit detail start when no updated event is returned", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailStart: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailStart: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -174,13 +174,13 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailStart).not.toHaveBeenCalled();
+            expect(oddsFeedEventSource.emitEventDetailStart).not.toHaveBeenCalled();
             expect(logService.logError).toHaveBeenCalled();
         });
 
         it("does not emit odds available when no updated event is returned", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailOddsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailOddsAvailable: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -193,13 +193,13 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailOddsAvailable).not.toHaveBeenCalled();
+            expect(oddsFeedEventSource.emitEventDetailOddsAvailable).not.toHaveBeenCalled();
             expect(logService.logError).toHaveBeenCalled();
         });
 
         it("stops retrying and logs when no updated event and retry < 0", async () => {
             // Arrange
-            const oddsFeedEventSource = { onEventDetailResultsAvailable: jest.fn(), onEventUpcoming: jest.fn(), onEventDetailUpComing: jest.fn() } as any;
+            const oddsFeedEventSource = { emitEventDetailResultsAvailable: jest.fn(), emitEventUpcoming: jest.fn(), emitEventDetailUpcoming: jest.fn() } as any;
             const schedulerMock = { schedule: jest.fn() } as any;
             const logService = { logError: jest.fn() } as any;
             const event = makeEvent();
@@ -218,7 +218,7 @@ describe("oddsFeedScheduler", () => {
             await call[1]();
 
             // Assert
-            expect(oddsFeedEventSource.onEventDetailResultsAvailable).not.toHaveBeenCalled();
+            expect(oddsFeedEventSource.emitEventDetailResultsAvailable).not.toHaveBeenCalled();
             expect(consoleErrorSpy).toHaveBeenCalled();
             consoleErrorSpy.mockRestore();
         });

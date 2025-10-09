@@ -1,13 +1,13 @@
-import { oddsFeedStoreImpl } from "@/services";
+import { OddsFeedStoreImpl as oddsFeedStoreImpl } from "@/services";
 import { idHelper } from "@/utils";
 
 describe("oddsFeedStore", () => {
     describe("initEvent/dispose", () => {
-        it("registers and unregisters system cleanup listener", () => {
+        it("registers and unregister system cleanup listener", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
 
@@ -16,8 +16,8 @@ describe("oddsFeedStore", () => {
             store.dispose();
 
             // Assert
-            expect(oddsFeedEventSource.registerSystemDataCleanupEventListener).toHaveBeenCalled();
-            expect(oddsFeedEventSource.unregisterSystemDataCleanupEventListener).toHaveBeenCalled();
+            expect(oddsFeedEventSource.cleanupOn).toHaveBeenCalled();
+            expect(oddsFeedEventSource.cleanupOff).toHaveBeenCalled();
         });
     });
 
@@ -25,8 +25,8 @@ describe("oddsFeedStore", () => {
         it("stores and retrieves event", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
             const eventId = idHelper.createEventId(5, 2);
@@ -43,8 +43,8 @@ describe("oddsFeedStore", () => {
         it("returns undefined when game bucket does not exist", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
             const eventId = idHelper.createEventId(6, 1);
@@ -61,8 +61,8 @@ describe("oddsFeedStore", () => {
         it("deletes event by derived game id", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
             const eventId = idHelper.createEventId(7, 3);
@@ -80,8 +80,8 @@ describe("oddsFeedStore", () => {
         it("delegates cleanup via system notification", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
             const eventId = idHelper.createEventId(8, 4);
@@ -99,8 +99,8 @@ describe("oddsFeedStore", () => {
         it("no-op when cleanup called and game bucket does not exist", () => {
             // Arrange
             const oddsFeedEventSource = {
-                registerSystemDataCleanupEventListener: jest.fn(),
-                unregisterSystemDataCleanupEventListener: jest.fn(),
+                cleanupOn: jest.fn(),
+                cleanupOff: jest.fn(),
             } as any;
             const store = new oddsFeedStoreImpl({ oddsFeedEventSource });
             const eventId = idHelper.createEventId(9, 9);
