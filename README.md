@@ -860,6 +860,73 @@ type BaseEventDetailListener<TEvent extends BaseEventType = BaseEventType> = (
 ) => void;
 ```
 
+#### 23. **Confusing Handler Method Naming** (`src/services/odd-feed-scheduler.ts`)
+
+- **Issue**: Methods named `handleEventStart()`, `handleEventDetailStart()` actually **emit** events, not handle them
+- **Impact**: Misleading API - developers expect these to be event handlers, not emitters
+- **Fix**: Rename to `emitEventStart()`, `emitEventDetailStart()` for clarity
+- **Files**: `src/services/odd-feed-scheduler.ts:91-133`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Confusing "handle" naming
+protected async handleEventStart(event: OddFeedEvent) {
+  const updatedEvent = await this.pullEventAndUpdateStore(event);
+  if (!updatedEvent) {
+    return;
+  }
+  this.oddFeedEventSource.onEventStart(updatedEvent);  // ❌ Actually emits
+}
+
+protected async handleEventDetailStart(event: OddFeedEvent, index: number) {
+  const updatedEvent = await this.pullEventAndUpdateStore(event);
+  if (!updatedEvent) {
+    return;
+  }
+  this.oddFeedEventSource.onEventDetailStart(updatedEvent, index);  // ❌ Actually emits
+}
+
+// ✅ After - Clear "emit" naming
+protected async emitEventStart(event: OddFeedEvent) {
+  const updatedEvent = await this.pullEventAndUpdateStore(event);
+  if (!updatedEvent) {
+    return;
+  }
+  this.oddFeedEventSource.emitEventStart(updatedEvent);  // ✅ Clearly emits
+}
+
+protected async emitEventDetailStart(event: OddFeedEvent, index: number) {
+  const updatedEvent = await this.pullEventAndUpdateStore(event);
+  if (!updatedEvent) {
+    return;
+  }
+  this.oddFeedEventSource.emitEventDetailStart(updatedEvent, index);  // ✅ Clearly emits
+}
+```
+
+#### 24. **Misleading Method Names in Scheduler** (`src/services/odd-feed-scheduler.ts`)
+
+- **Issue**: `scheduleEventDetailUpComing()` immediately emits events, doesn't actually schedule them
+- **Impact**: Confusing API - method name suggests scheduling but actually emits immediately
+- **Fix**: Rename to `emitEventDetailUpcoming()` or `triggerEventDetailUpcoming()`
+- **Files**: `src/services/odd-feed-scheduler.ts:57-58`
+
+**Example Fix:**
+
+```typescript
+// ❌ Before - Misleading "schedule" naming
+protected scheduleEventDetailUpComing(event: OddFeedEvent, index: number) {
+  this.oddFeedEventSource.onEventDetailUpComing(event, index);  // ❌ Immediately emits, doesn't schedule
+}
+
+// ✅ After - Clear naming
+protected emitEventDetailUpcoming(event: OddFeedEvent, index: number) {
+  this.oddFeedEventSource.emitEventDetailUpcoming(event, index);  // ✅ Clearly emits immediately
+}
+
+```
+
 ---
 
 ## Requirements
