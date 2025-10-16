@@ -170,6 +170,63 @@ type EventDetail = {
 };
 ```
 
+#### AppConfigs (`src/interfaces/app-config.ts`)
+
+```typescript
+interface AppConfigs {
+  oddsFeedAPI: {
+    url: string;
+    operatorId: string;
+    password: string;
+  };
+  sentry?: {
+    sentryUrl: string;
+    logIdentifier: string;
+    env: string;
+    debug?: boolean;
+  };
+}
+```
+
+#### Logger (`src/interfaces/logger.ts`)
+
+```typescript
+interface Logger {
+  logError: (message: string) => void;
+}
+```
+
+#### Event Types (`src/interfaces/odds-feed-event-source.ts`)
+
+```typescript
+export enum OddsFeedEventName {
+  Wildcard = "*",
+  EventStart = "event.ScheduleStart",
+  EventDetailUpComing = "eventDetail.UpComing",
+  EventDetailStart = "eventDetail.ScheduleStart",
+  EventDetailOddsAvailable = "eventDetail.OddsAvailable",
+  EventDetailResultsAvailable = "eventDetail.ResultsAvailable",
+  EventUpcoming = "event.Upcoming",
+}
+
+export enum SystemEventName {
+  DataCleanup = "system.DataCleanup",
+}
+
+export interface EventDetailNotification<TEvent extends Event = Event> {
+  event: TEvent;
+  index: number;
+}
+
+export interface EventNotification<TEvent extends Event = Event> {
+  event: TEvent;
+}
+
+export interface SystemNotification {
+  eventID: number;
+}
+```
+
 ### Service Details
 
 #### OddsFeedService (`src/services/odds-feed-service.ts`)
@@ -206,6 +263,20 @@ type EventDetail = {
 - **Queue Management**: Maintains FIFO queue per game (max 50 events)
 - **Automatic Cleanup**: Triggers cleanup when queue exceeds limit
 - **Event Emission**: Emits system cleanup events
+
+#### MarbleLoggerService (`src/services/marble-logger-service.ts`)
+
+- **Sentry Integration**: Built-in Sentry error tracking and monitoring
+- **Structured Logging**: Consistent log format with annotations
+- **Environment Support**: Debug mode for development
+- **Tag Management**: Automatic gameId and eventId tagging
+
+#### Scheduler (`src/services/scheduler.ts`)
+
+- **Time-based Execution**: Schedules callbacks for future execution
+- **Task Management**: Prevents duplicate scheduling with key-based deduplication
+- **Memory Management**: Automatic cleanup of completed tasks
+- **Error Handling**: Safe callback execution with try-catch
 
 ### Dependency Injection
 
@@ -492,15 +563,47 @@ Check `example/` for a complete, runnable setup that mirrors the snippets above.
 
 ### Dependencies
 
-- **Runtime**: Node.js >= 18
+- **Runtime**: Node.js >= 18.0.0
 - **Language**: TypeScript 5.9.3
 - **DI Container**: Awilix 12.0.5
 - **Cron**: cron 4.3.3
 - **Monitoring**: @sentry/node 10.17.0
-- **Testing**: Jest 30.2.0
+- **Testing**: Jest 30.2.0, ts-jest 29.4.4
+- **Build Tools**: tsc-alias 1.8.16, rimraf 6.0.1
 
-### Key Libraries
+### Key Libraries & APIs
 
 - **EventEmitter**: Node.js built-in for event handling
 - **Fetch API**: For HTTP requests to odds feed APIs
 - **BigInt**: For event ID manipulation (gameId/roundId extraction)
+- **CronJob**: For periodic task scheduling
+- **Sentry**: Error tracking and performance monitoring
+
+### Architecture Patterns
+
+- **Dependency Injection**: Service container pattern with Awilix
+- **Event-Driven**: Publisher-subscriber pattern for loose coupling
+- **Repository Pattern**: In-memory data store abstraction
+- **Strategy Pattern**: Configurable event filtering
+- **Factory Pattern**: Service instantiation through DI container
+
+### Module Structure
+
+```
+src/
+├── container/          # DI container adapters
+├── dependency-injection/ # Service registration
+├── domain/            # Domain models and types
+├── interfaces/        # Service contracts
+├── lib/              # External library wrappers
+├── services/         # Business logic implementations
+└── utils/            # Utility functions
+```
+
+### Build & Development
+
+- **Module System**: ES Modules (type: "module")
+- **Path Mapping**: @/ aliases for clean imports
+- **Type Checking**: Strict TypeScript configuration
+- **Testing**: Jest with TypeScript support
+- **Linting**: Integrated with IDE tooling
