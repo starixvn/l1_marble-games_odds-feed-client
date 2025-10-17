@@ -3,7 +3,6 @@ import {
     OddsFeedEventSourceImpl,
     OddsFeedPullServiceImpl,
     OddsFeedSchedulerImpl,
-    OddsFeedStoreImpl,
     EventCleanerServiceImpl,
     SchedulerImpl,
     OddsFeedServiceImpl,
@@ -14,17 +13,19 @@ import {
     EventCleanerService, 
     MarbleLoggerService, 
     OddsFeedCron, 
-    OddsFeedStore,
 } from "@/interfaces";
 import { Event } from "@/domain";
 
 
 function register<TEvent extends Event = Event>(diContainer: DiContainer, {
     oddsFeedFilter = true,
+    eventQueueMaxLength = 10,
 }: {
     oddsFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
+    eventQueueMaxLength?: number;
 } = {
     oddsFeedFilter: true,
+    eventQueueMaxLength: 10,
 }) {
     const normalizedoddsFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
         typeof oddsFeedFilter === "function"
@@ -49,12 +50,6 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
         registerType: "class",
         key: "oddsFeedScheduler",
         value: OddsFeedSchedulerImpl,
-    })
-    diContainer.register({
-        registerType: "class",
-        key: "oddsFeedStore",
-        value: OddsFeedStoreImpl,
-        disposer: (oddsFeedStore) => oddsFeedStore.dispose(),
     })
     diContainer.register({
         registerType: "class",
@@ -83,11 +78,15 @@ function register<TEvent extends Event = Event>(diContainer: DiContainer, {
         key: "oddsFeedFilter",
         value: normalizedoddsFeedFilter,
     })
+    diContainer.register({
+        registerType: "value",
+        key: "eventQueueMaxLength",
+        value: eventQueueMaxLength,
+    })
 }
 
 function init(container: DiContainer) {
     container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
-    container.resolve<OddsFeedStore>("oddsFeedStore").initEvent();
     container.resolve<EventCleanerService>("eventCleanerService").initEvent();
     container.resolve<OddsFeedCron>("oddsFeedCron").start();
 }

@@ -16,7 +16,7 @@ export class AwilixDIContainer implements DiContainer {
     }: {
         registerType: "class" | "function" | "value" | "alias",
         key: string | Symbol,
-        value?: Constructor<T> | ((...args: any[]) => T) | Promise<T> | string,
+        value?: Constructor<T> | ((...args: any[]) => T) | Promise<T> | string | T,
         disposer?: (service: T) => void | Promise<void>,
     }): void {
         switch (registerType) {
@@ -35,7 +35,7 @@ export class AwilixDIContainer implements DiContainer {
                 break;
             case "value":
                 this.registerValue({
-                    value,
+                    value: value as T,
                     key: key as string,
                 })
                 break;
@@ -48,7 +48,7 @@ export class AwilixDIContainer implements DiContainer {
         }
     }
 
-    private registerAlias<T>({
+    private registerAlias({
         key,
         alias,
     }: {

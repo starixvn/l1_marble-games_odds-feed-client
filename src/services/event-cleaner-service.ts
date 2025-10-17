@@ -6,21 +6,21 @@ import {
     OddsFeedEventSource, 
 } from "@/interfaces";
 
-const MAX_LENGTH = 50;
-
 interface EventCleanerServiceContainer {
     oddsFeedEventSource: OddsFeedEventSource;
+    eventQueueMaxLength: number;
 }
 
 export class EventCleanerServiceImpl implements EventCleanerService {
     private readonly oddsFeedEventSource: OddsFeedEventSource;
     private _eventQueueByGameId: Record<string, number[]> = {};
-    private readonly maxLength = MAX_LENGTH;
+    private readonly maxLength: number;
     private readonly boundHandleEventStart: (notification: EventNotification) => void;
 
     constructor(container: EventCleanerServiceContainer) {
         this.oddsFeedEventSource = container.oddsFeedEventSource;
         this.boundHandleEventStart = this.handleEventStart.bind(this);
+        this.maxLength = container.eventQueueMaxLength;
     }
 
     public initEvent() {

@@ -1,11 +1,11 @@
-import { oddsFeedEventSource, oddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
+import { OddsFeedEventSource, OddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
 
 interface LogServiceContainer {
-    oddsFeedEventSource: oddsFeedEventSource;
+    oddsFeedEventSource: OddsFeedEventSource;
 }
 
 export class LogService {
-    private readonly oddsFeedEventSource: oddsFeedEventSource;
+    private readonly oddsFeedEventSource: OddsFeedEventSource;
 
     private readonly boundHandleEventUpcoming: EventListener;
     private readonly boundHandleEventDetailUpComing: EventDetailListener;
@@ -19,23 +19,23 @@ export class LogService {
     }
 
     init() {
-        this.oddsFeedEventSource.registerEventListener(
-            oddsFeedEventName.EventUpcoming,
+        this.oddsFeedEventSource.eventOn(
+            OddsFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
-        this.oddsFeedEventSource.registerEventDetailEventListener(
-            oddsFeedEventName.EventDetailUpComing,
+        this.oddsFeedEventSource.eventDetailOn(
+            OddsFeedEventName.EventDetailUpComing,
             this.boundHandleEventDetailUpComing
         )
     }
 
     dispose() {
-        this.oddsFeedEventSource.unregisterEventListener(
-            oddsFeedEventName.EventUpcoming,
+        this.oddsFeedEventSource.eventOff(
+            OddsFeedEventName.EventUpcoming,
             this.boundHandleEventUpcoming
         )
-        this.oddsFeedEventSource.unregisterEventDetailEventListener(
-            oddsFeedEventName.EventDetailUpComing,
+        this.oddsFeedEventSource.eventDetailOff(
+            OddsFeedEventName.EventDetailUpComing,
             this.boundHandleEventDetailUpComing
         )
     }

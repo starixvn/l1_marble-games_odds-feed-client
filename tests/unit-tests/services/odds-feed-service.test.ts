@@ -14,13 +14,18 @@ describe("oddsFeedService", () => {
 
     beforeEach(() => {
         (global as any).fetch = jest.fn();
-        logService = { logError: jest.fn() };
+        logService = { logError: jest.fn(), log: jest.fn() };
         marbleLoggerService = { init: jest.fn(), log: jest.fn(), error: jest.fn(), warning: jest.fn(), debug: jest.fn() } as any;
         appConfigs = {
             oddsFeedAPI: {
                 url: "https://api.example.com",
                 operatorId: "op-1",
                 password: "pwd",
+            },
+            sentry: {
+                sentryUrl: "https://dsn.example/1",
+                logIdentifier: "LOGGER",
+                env: "test",
             },
         };
         service = new oddsFeedServiceImpl({ logService, appConfigs, marbleLoggerService } as any);

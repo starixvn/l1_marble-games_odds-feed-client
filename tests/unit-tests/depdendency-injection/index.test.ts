@@ -119,13 +119,11 @@ describe("dependency-injection", () => {
 		it("resolves and initializes services", () => {
             // Arrange
 			const marbleLoggerService = { init: jest.fn() };
-            const oddsFeedStore = { initEvent: jest.fn() };
             const eventCleanerService = { initEvent: jest.fn() };
             const oddsFeedCron = { start: jest.fn() };
             const diContainer = {
                 resolve: jest.fn((key: string) => {
 					if (key === "marbleLoggerService") return marbleLoggerService;
-                    if (key === "oddsFeedStore") return oddsFeedStore;
                     if (key === "eventCleanerService") return eventCleanerService;
                     if (key === "oddsFeedCron") return oddsFeedCron;
                     return undefined;
@@ -137,7 +135,6 @@ describe("dependency-injection", () => {
 
             // Assert
 			expect(marbleLoggerService.init).toHaveBeenCalled();
-            expect(oddsFeedStore.initEvent).toHaveBeenCalled();
             expect(eventCleanerService.initEvent).toHaveBeenCalled();
             expect(oddsFeedCron.start).toHaveBeenCalled();
         });

@@ -3,6 +3,8 @@ import { OddsFeedEventName as oddsFeedEventName } from "@/interfaces";
 import { idHelper } from "@/utils";
 
 describe("EventCleanerService", () => {
+    const eventQueueMaxLength = 10;
+    
     describe("initEvent", () => {
         it("registers EventStart listener", () => {
             // Arrange
@@ -11,7 +13,7 @@ describe("EventCleanerService", () => {
                 eventOff: jest.fn(),
                 emitDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
 
             // Act
             service.initEvent();
@@ -32,7 +34,7 @@ describe("EventCleanerService", () => {
                 eventOff: jest.fn(),
                 emitDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
             service.initEvent();
             const registered = (oddsFeedEventSource.eventOn as jest.Mock).mock.calls[0][1];
 
@@ -55,12 +57,12 @@ describe("EventCleanerService", () => {
                 eventOff: jest.fn(),
                 emitDataCleanup: jest.fn(),
             } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource });
+            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
             const gameId = 1;
             const firstEventId = idHelper.createEventId(gameId, 0);
 
             // Act
-            for (let i = 0; i < 51; i++) {
+            for (let i = 0; i < eventQueueMaxLength + 1; i++) {
                 const eventID = idHelper.createEventId(gameId, i);
                 service.handleEventStart({ event: { eventID } as any });
             }

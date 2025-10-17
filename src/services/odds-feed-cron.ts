@@ -1,4 +1,5 @@
 import { OddsFeedPullService, OddsFeedScheduler, Logger, OddsFeedCron } from "@/interfaces";
+import { Event } from "@/domain";
 import * as cron from "@/lib/cron";
 
 
@@ -42,12 +43,20 @@ export class OddsFeedCronImpl implements OddsFeedCron {
     
     public async schedule() {
         const upcomingEvents = await this.oddsFeedPullService.pullUpcoming();
-        upcomingEvents.forEach( async (event) => {
+        upcomingEvents.forEach((event) => {
+            void this.scheduleEvent(event);
+        });
+    }
+
+    private async scheduleEvent(event: Event): Promise<void> {
+        try {
             const eventWithDetails = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID);
             if (!eventWithDetails) {
                 return;
             }
             this.oddsFeedScheduler.scheduleEvent(eventWithDetails);
-        });
+        } catch (error) {
+            this.logService.logError(`Failed to schedule event ${event.eventID}: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 }

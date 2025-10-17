@@ -1,18 +1,207 @@
 # Odds Feed Client
 
-Event-based odds feed client for Marble games. Provides a small set of services to pull schedules and event details, emit domain events, and manage an in-memory store. Ships with a simple dependency injection setup and an Awilix adapter.
-
-## Project Overview
-
 The **odds-feed-client** is a TypeScript library that acts as a bridge between external odds feed APIs and Marble game services. It periodically fetches event data, schedules event processing, and emits domain events for consumption by other services.
 
-### Main Purpose
+## Installation
 
-- **Data Ingestion**: Pulls event schedules and details from external odds feed APIs
-- **Event Scheduling**: Schedules time-based events (event starts, odds availability, results)
-- **Event Publishing**: Emits domain events for downstream services to consume
-- **Data Management**: Maintains in-memory store of events keyed by gameId and eventId
-- **Lifecycle Management**: Handles event cleanup and memory management
+```bash
+npm install odds-feed-client
+# or
+yarn add odds-feed-client
+# or
+pnpm add odds-feed-client
+```
+
+If you use the Awilix adapter shown below, also install `awilix` (it is already a dependency here, so this is optional for most setups):
+
+```bash
+npm install awilix
+```
+
+If you don't use Awilix, you must inherit interface DiContainer
+
+```ts
+import { DiContainer } from "odds-feed-client/container";
+```
+
+
+## Quick start (TypeScript)
+
+Overview of this is:
+- Write event event handling code for you own service.
+- Create container and bind dependencies (currently Awilix is the most optimal)
+- Register event from the oddsFeedEventSource
+- Call diContainer.init to start listening data from the event source
+
+You could refer to the example code in this repo at the /example folder
+
+### Preprare your appConfigs
+
+The app config requires both Odds Feed and Sentry Credential to be able to function normally.
+
+
+```ts
+const appConfigs = {
+   oddsFeedAPI: {
+        url: "<your-odds-feed-api-url>";
+        operatorId: "<your-operator-id>";
+        password: "<your-operator-password>";
+    };
+    sentry: {
+        sentryUrl: "<your-sentry-dsn>";
+        logIdentifier: "<your-sentry-log-identifier>";
+        env: "<your-sentry-env>";
+    };
+}
+
+```
+
+### Develop your own services to get data from the odds feed event source.
+Develop your own service to meet the business requirement. For example, this is a log service.
+
+And this is also a recommended pattern.
+
+```ts
+import { OddsFeedEventSource, OddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
+
+interface LogServiceContainer {
+    oddsFeedEventSource: OddsFeedEventSource;
+}
+
+export class LogService {
+    private readonly oddsFeedEventSource: OddsFeedEventSource;
+
+    private readonly boundHandleEventUpcoming: EventListener;
+    private readonly boundHandleEventDetailUpComing: EventDetailListener;
+    
+    constructor(
+        container: LogServiceContainer,
+    ) {
+        this.oddsFeedEventSource = container.oddsFeedEventSource;
+        this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
+        this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
+    }
+
+    init() {
+        this.oddsFeedEventSource.eventOn(
+            OddsFeedEventName.EventUpcoming,
+            this.boundHandleEventUpcoming
+        )
+        this.oddsFeedEventSource.eventDetailOn(
+            OddsFeedEventName.EventDetailUpComing,
+            this.boundHandleEventDetailUpComing
+        )
+    }
+
+    dispose() {
+        this.oddsFeedEventSource.eventOff(
+            OddsFeedEventName.EventUpcoming,
+            this.boundHandleEventUpcoming
+        )
+        this.oddsFeedEventSource.eventDetailOff(
+            OddsFeedEventName.EventDetailUpComing,
+            this.boundHandleEventDetailUpComing
+        )
+    }
+
+    handleEventUpcoming({ event }: EventNotification ) {
+        console.log(new Date().toISOString());
+        console.log("Event Upcoming", event.scheduleStartTs);
+    }
+
+    handleEventDetailUpComing({ event, index }: EventDetailNotification) {
+        console.log(new Date().toISOString());
+        console.log("Event Detail Up Coming", event.scheduleStartTs, index);
+    }
+}
+```
+
+
+### Create depdendencies helper
+
+Create a dependencies helper functions for registering and init wanted service.
+
+These functions should be in folder container-registry.ts (optional and conventional).
+
+Best practice: If the project is multi-team maintained, each team handle one container-registry.ts and a set of services that is used in that file, this will reduce Git model complexity since each team manage their own files.
+
+
+```ts
+import { DiContainer } from "odds-feed-client/container";
+import { appConfigs } from "./app-configs";
+import { LogService } from "./log-service";
+import { CustomLogger } from "./logger";
+
+export function registerLogServices(diContainer: DiContainer) {
+    diContainer.register({
+        registerType: "class",
+        key: "logService",
+        value: LogService,
+    });
+    
+    diContainer.register({
+        registerType: "class",
+        key: "logger",
+        value: CustomLogger,
+    });
+    
+    diContainer.register({
+        registerType: "value",
+        key: "appConfigs",
+        value: appConfigs,
+  });
+}
+
+export function initLogServices(diContainer: DiContainer) {
+    diContainer.resolve<LogService>("logService").init();
+}
+```
+
+### Create a container and register dependencies and init dependenceis
+
+Create a container with Awilix, and wrap it with container adapter.
+Then register and init dependencies by calling these functions from container registry file and the odds feed client container registration functions.
+
+```ts
+import { createContainer } from "awilix";
+import { init, register } from "odds-feed-client/dependency-injection";
+import { AwilixDIContainer } from "odds-feed-client/awilix";
+
+import { registerLogServices, initLogServices } from "./container-registry";
+
+const container = createContainer();
+
+
+const diContainer = new AwilixDIContainer(container);
+
+register(diContainer);
+registerLogServices(diContainer);
+init(diContainer);
+initLogServices(diContainer);
+
+
+
+```
+
+### Configs:
+
+#### Odds Feed Filter
+- You can filter what event to be processed by injecting odds feed filter to the container.
+
+```ts
+import { register } from "odds-feed-client/dependency-injection"
+import { createContainer } from "awilix";
+import { AwilixDIContainer } from "odds-feed-client/awilix";
+
+const container = createContainer();
+const diContainer = new AwilixDIContainer(container);
+
+register<MarbleEvent>(diContainer, {
+        oddsFeedFilter,
+    });
+
+```
+
 
 ## Architecture Map
 
@@ -23,28 +212,26 @@ graph TB
     end
 
     subgraph "Core Services"
-        OS[OddsFeedService<br/>API Client]
-        PS[OddsFeedPullService<br/>Data Orchestrator]
-        CR[OddsFeedCron<br/>Scheduler]
-        SC[OddsFeedScheduler<br/>Event Scheduler]
-        ST[OddsFeedStore<br/>In-Memory Store]
-        ES[OddsFeedEventSource<br/>Event Emitter]
+        OS[OddsFeedService]
+        PS[OddsFeedPullService]
+        CR[OddsFeedCron]
+        SC[OddsFeedScheduler]
+        ES[OddsFeedEventSource]
     end
 
     subgraph "Supporting Services"
-        CL[EventCleanerService<br/>Memory Management]
-        ML[MarbleLoggerService<br/>Logging & Monitoring]
-        SCH[Scheduler<br/>Time-based Tasks]
+        CL[EventCleanerService]
+        ML[MarbleLoggerService]
+        SCH[Scheduler]
     end
 
     subgraph "Consumers"
-        EXT[External Services<br/>Event Listeners]
+        EXT[External Services]
     end
 
     API --> OS
     OS --> PS
     CR --> PS
-    PS --> ST
     PS --> SC
     SC --> ES
     SC --> SCH
@@ -53,6 +240,8 @@ graph TB
     ML --> OS
     ML --> PS
 ```
+
+The "External Services" is where your own services consumes the events.
 
 ## Features & Services
 
@@ -64,7 +253,6 @@ graph TB
 | **OddsFeedPullService** | Data orchestration       | `pullUpcoming()`, `pullEventWithEventDetails()`             | OddsFeedService, OddsFeedStore, Logger, oddsFeedFilter |
 | **OddsFeedCron**        | Periodic scheduling      | `start()`, `scheduleNextEventsCron()`                       | OddsFeedPullService, OddsFeedScheduler, Logger         |
 | **OddsFeedScheduler**   | Event timing             | `scheduleEvent()`, `scheduleEventUpcoming()`                | OddsFeedEventSource, Scheduler, OddsFeedPullService    |
-| **OddsFeedStore**       | In-memory storage        | `setEventByGameId()`, `getEventByGameId()`, `cleanup()`     | OddsFeedEventSource                                    |
 | **OddsFeedEventSource** | Event emission           | `emitEventStart()`, `emitEventUpcoming()`, `eventOn()`      | None (EventEmitter)                                    |
 
 ### Supporting Services
@@ -84,7 +272,6 @@ sequenceDiagram
     participant CR as OddsFeedCron
     participant PS as OddsFeedPullService
     participant OS as OddsFeedService
-    participant ST as OddsFeedStore
     participant SC as OddsFeedScheduler
     participant ES as OddsFeedEventSource
     participant EXT as External Listeners
@@ -93,12 +280,10 @@ sequenceDiagram
     CR->>PS: pullUpcoming()
     PS->>OS: fetchSchedule()
     OS-->>PS: Event[]
-    PS->>ST: setEventByGameId()
 
     loop For each event
         PS->>OS: fetchEventDetails(eventId)
         OS-->>PS: Event with details
-        PS->>ST: setEventByGameId()
         PS->>SC: scheduleEvent(event)
 
         SC->>ES: onEventUpcoming()
@@ -120,7 +305,6 @@ sequenceDiagram
     participant PS as OddsFeedPullService
     participant ES as OddsFeedEventSource
     participant CL as EventCleanerService
-    participant ST as OddsFeedStore
 
     Note over SCH: At scheduled time
     SCH->>SC: handleEventStart()
@@ -128,7 +312,6 @@ sequenceDiagram
     PS-->>SC: Updated Event
     SC->>ES: onEventStart()
     ES->>CL: EventStart notification
-    CL->>ST: cleanup() if needed
     ES->>EXT: EventStart notification
 ```
 
@@ -250,12 +433,6 @@ export interface SystemNotification {
 - **Event Emission**: Triggers appropriate events at scheduled times
 - **Retry Logic**: Built-in retry for result availability
 
-#### OddsFeedStore (`src/services/odds-feed-store.ts`)
-
-- **In-Memory Storage**: `Record<string, Record<number, Event>>` structure
-- **Game-based Organization**: Events organized by gameId, then eventId
-- **Cleanup Management**: Handles event cleanup via EventCleanerService
-- **Lifecycle**: Registers for system cleanup events
 
 #### EventCleanerService (`src/services/event-cleaner-service.ts`)
 
@@ -288,7 +465,6 @@ marbleLoggerService -> MarbleLoggerServiceImpl
 oddsFeedEventSource -> OddsFeedEventSourceImpl
 oddsFeedPullService -> OddsFeedPullServiceImpl
 oddsFeedScheduler -> OddsFeedSchedulerImpl
-oddsFeedStore -> OddsFeedStoreImpl (with disposer)
 eventCleanerService -> EventCleanerServiceImpl (with disposer)
 scheduler -> SchedulerImpl (with disposer)
 oddsFeedService -> OddsFeedServiceImpl
@@ -299,9 +475,8 @@ oddsFeedFilter -> Function (configurable)
 #### Initialization Flow
 
 1. **MarbleLoggerService.init()** - Initialize logging
-2. **OddsFeedStore.initEvent()** - Register cleanup listeners
-3. **EventCleanerService.initEvent()** - Register event listeners
-4. **OddsFeedCron.start()** - Start periodic scheduling
+2. **EventCleanerService.initEvent()** - Register event listeners
+3. **OddsFeedCron.start()** - Start periodic scheduling
 
 ## Improvements & Refactors
 
@@ -348,262 +523,9 @@ this.marbleLoggerService.log(
 
 **Example Fix:**
 
-```typescript
-// ❌ Before - Mixed patterns with potential race conditions
-public async schedule() {
-  const upcomingEvents = await this.oddFeedPullService.pullUpcoming();
-  upcomingEvents.forEach(async (event) => {  // ❌ forEach with async
-    const eventWithDetails = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
-    if (!eventWithDetails) {
-      return;
-    }
-    this.oddFeedScheduler.scheduleEvent(eventWithDetails);
-  });
-}
-
-// ✅ After - Proper async handling
-public async schedule() {
-  try {
-    const upcomingEvents = await this.oddFeedPullService.pullUpcoming();
-
-    // Process events sequentially to avoid overwhelming the API
-    for (const event of upcomingEvents) {
-      try {
-        const eventWithDetails = await this.oddFeedPullService.pullEventWithEventDetails(event.eventID);
-        if (eventWithDetails) {
-          this.oddFeedScheduler.scheduleEvent(eventWithDetails);
-        }
-      } catch (error) {
-        this.logService.logError(`Failed to process event ${event.eventID}: ${error.message}`);
-      }
-    }
-  } catch (error) {
-    this.logService.logError(`Failed to pull upcoming events: ${error.message}`);
-  }
-}
-```
-
 ### Naming & API Design Issues
-
-#### 23. **Confusing Handler Method Naming** (`src/services/odd-feed-scheduler.ts`)
-
-- **Issue**: Methods named `handleEventStart()`, `handleEventDetailStart()` actually **emit** events, not handle them
-- **Impact**: Misleading API - developers expect these to be event handlers, not emitters
-- **Fix**: Rename to `emitEventStart()`, `emitEventDetailStart()` for clarity
-- **Files**: `src/services/odds-feed-scheduler.ts:91-133`
-
-**Example Fix:**
-
-```typescript
-// ❌ Before - Confusing "handle" naming
-protected async handleEventStart(event: OddsFeedEvent) {
-  const updatedEvent = await this.pullEventAndUpdateStore(event);
-  if (!updatedEvent) {
-    return;
-  }
-  this.oddFeedEventSource.onEventStart(updatedEvent);  // ❌ Actually emits
-}
-
-protected async handleEventDetailStart(event: OddsFeedEvent, index: number) {
-  const updatedEvent = await this.pullEventAndUpdateStore(event);
-  if (!updatedEvent) {
-    return;
-  }
-  this.oddFeedEventSource.onEventDetailStart(updatedEvent, index);  // ❌ Actually emits
-}
-
-// ✅ After - Clear "emit" naming
-protected async emitEventStart(event: OddsFeedEvent) {
-  const updatedEvent = await this.pullEventAndUpdateStore(event);
-  if (!updatedEvent) {
-    return;
-  }
-  this.oddFeedEventSource.emitEventStart(updatedEvent);  // ✅ Clearly emits
-}
-
-protected async emitEventDetailStart(event: OddsFeedEvent, index: number) {
-  const updatedEvent = await this.pullEventAndUpdateStore(event);
-  if (!updatedEvent) {
-    return;
-  }
-  this.oddFeedEventSource.emitEventDetailStart(updatedEvent, index);  // ✅ Clearly emits
-}
-```
-
-#### 24. **Unused Method in Scheduler** (`src/services/odd-feed-scheduler.ts`)
-
-- **Issue**: `scheduleEventDetailUpComing()` unused
-- **Fix**: delete
-- **Files**: `src/services/odds-feed-scheduler.ts:57-58`
-
-#### 25. **Unused/ Unnecessary Services: EventCleanerServiceImpl, OddsFeedStoreImpl**
-
-- **Issue**: unused/ unnecessary services
-- **Fix**: delete/ optional config
-- **Files**: `src/services/event-cleaner-service.ts`, `src/services/odds-feed-store.ts`
 
 ## Requirements
 
 - Node.js >= 18
 
-## Installation
-
-```bash
-npm install odds-feed-client
-# or
-yarn add odds-feed-client
-# or
-pnpm add odds-feed-client
-```
-
-If you use the Awilix adapter shown below, also install `awilix` (it is already a dependency here, so this is optional for most setups):
-
-```bash
-npm install awilix
-```
-
-## Quick start (TypeScript)
-
-The `example/` folder contains a runnable sample. Below is the minimal setup using Awilix.
-
-```ts
-import { createContainer, asClass, asValue } from "awilix";
-import { register, init } from "odds-feed-client/dependency-injection";
-import { AwilixDIContainer } from "odds-feed-client/awilix";
-import type {
-  AppConfigs,
-  Logger,
-  OddsFeedEventSource,
-  OddsFeedEventName,
-} from "odds-feed-client";
-
-// 1) App configuration
-const appConfigs: AppConfigs = {
-  oddsFeedAPI: {
-    url: "https://your-odds-feed-host",
-    operatorId: "<operator-id>",
-    password: "<operator-password>",
-  },
-};
-
-// 2) Logger implementation (only logError is required)
-class ConsoleLogger implements Logger {
-  public logError(message: string) {
-    console.error(message);
-  }
-}
-
-// 3) Create Awilix container and register your own bindings
-const container = createContainer();
-container.register({
-  appConfigs: asValue(appConfigs),
-  logger: asClass(ConsoleLogger),
-});
-
-// 4) Wrap as a DI container and register odds-feed services
-const di = new AwilixDIContainer(container);
-register(di);
-init(di); // starts cron and internal listeners
-
-// 5) Listen to feed events
-const eventSource = di.resolve<OddsFeedEventSource>("oddsFeedEventSource");
-eventSource.eventOn(OddsFeedEventName.EventUpcoming, ({ event }) => {
-  console.log("Upcoming event:", event.eventID);
-});
-```
-
-This will:
-
-- authenticate to the odds feed and pull the schedule
-- periodically (every ~30s) reschedule and fetch event details
-- emit domain events via the internal event source
-- store events in an in-memory store keyed by gameId and eventId
-
-### Reading from the store
-
-```ts
-import type { OddsFeedStore } from "odds-feed-client";
-
-const store = di.resolve<OddsFeedStore>("oddsFeedStore");
-const event = store.getEventByGameId("<game-id>", /* eventId */ 123456);
-```
-
-### Odds feed filter (container value)
-
-`OddsFeedPullService` can take an optional filter to decide which events to keep. Register a value named `oddsFeedFilter` in your container. It can be either:
-
-- a function `(event) => boolean` (predicate), or
-- a boolean (`true` to include all, `false` to include none).
-
-If you don't register it, all events are included by default.
-
-```ts
-// Keep all events (default behavior example)
-container.register({
-  oddFeedFilter: asValue(true), // include all events
-});
-
-// Example: only include events for specific gameIds
-container.register({
-  oddFeedFilter: asValue((event) => event.gameId === 2000),
-});
-```
-
-### Example app
-
-Check `example/` for a complete, runnable setup that mirrors the snippets above.
-
-### Exports
-
-- `odds-feed-client`: re-exports interfaces and domain types
-- `odds-feed-client/dependency-injection`: `register(diContainer)`, `init(diContainer)`
-- `odds-feed-client/awilix`: `AwilixDIContainer` adapter
-
-## Technical Stack
-
-### Dependencies
-
-- **Runtime**: Node.js >= 18.0.0
-- **Language**: TypeScript 5.9.3
-- **DI Container**: Awilix 12.0.5
-- **Cron**: cron 4.3.3
-- **Monitoring**: @sentry/node 10.17.0
-- **Testing**: Jest 30.2.0, ts-jest 29.4.4
-- **Build Tools**: tsc-alias 1.8.16, rimraf 6.0.1
-
-### Key Libraries & APIs
-
-- **EventEmitter**: Node.js built-in for event handling
-- **Fetch API**: For HTTP requests to odds feed APIs
-- **BigInt**: For event ID manipulation (gameId/roundId extraction)
-- **CronJob**: For periodic task scheduling
-- **Sentry**: Error tracking and performance monitoring
-
-### Architecture Patterns
-
-- **Dependency Injection**: Service container pattern with Awilix
-- **Event-Driven**: Publisher-subscriber pattern for loose coupling
-- **Repository Pattern**: In-memory data store abstraction
-- **Strategy Pattern**: Configurable event filtering
-- **Factory Pattern**: Service instantiation through DI container
-
-### Module Structure
-
-```
-src/
-├── container/          # DI container adapters
-├── dependency-injection/ # Service registration
-├── domain/            # Domain models and types
-├── interfaces/        # Service contracts
-├── lib/              # External library wrappers
-├── services/         # Business logic implementations
-└── utils/            # Utility functions
-```
-
-### Build & Development
-
-- **Module System**: ES Modules (type: "module")
-- **Path Mapping**: @/ aliases for clean imports
-- **Type Checking**: Strict TypeScript configuration
-- **Testing**: Jest with TypeScript support
-- **Linting**: Integrated with IDE tooling
