@@ -202,6 +202,25 @@ register<MarbleEvent>(diContainer, {
 
 ```
 
+#### Event Queue Max Length
+
+This specify how many events lives in the memory. On max event exceeded, the cleanup event will be emitted to let you know that event should be deleted. You have handle that event and implement the cleanup logic yourself in case you persist event on your own service memory.
+
+```ts
+import { createContainer } from "awilix";
+import { init, register } from "odds-feed-client/dependency-injection";
+import { AwilixDIContainer } from "odds-feed-client/awilix";
+
+const container = createContainer();
+
+const diContainer = new AwilixDIContainer(container);
+
+register(diContainer, {
+    eventQueueMaxLength: 2
+});
+
+```
+
 
 ## Architecture Map
 
