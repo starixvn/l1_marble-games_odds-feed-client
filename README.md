@@ -35,7 +35,7 @@ Overview of this is:
 
 You could refer to the example code in this repo at the /example folder
 
-### Preprare your appConfigs
+### Prepare your appConfigs
 
 The app config requires both Odds Feed and Sentry Credential to be able to function normally.
 
@@ -117,7 +117,7 @@ export class LogService {
 ```
 
 
-### Create depdendencies helper
+### Create dependencies helper
 
 Create a dependencies helper functions for registering and init wanted service.
 
@@ -157,7 +157,7 @@ export function initLogServices(diContainer: DiContainer) {
 }
 ```
 
-### Create a container and register dependencies and init dependenceis
+### Create a container and register dependencies and init dependencies
 
 Create a container with Awilix, and wrap it with container adapter.
 Then register and init dependencies by calling these functions from container registry file and the odds feed client container registration functions.
