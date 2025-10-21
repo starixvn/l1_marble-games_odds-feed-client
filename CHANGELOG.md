@@ -1,3 +1,11 @@
+# [3.0.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v2.0.0...v3.0.0) (2025-10-21)
+
+
+### Features
+
+* expose schedule and scheduleEvent API for odds feed cron - Epic GL-5506 ([06b50f1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/06b50f13e07951c5e3124e737d386417ead95761))
+* refactor structure and API protocols - Epic GL-5506 ([fcbfb29](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/fcbfb292c9174b27d34a2d6e31301a0a627f510b))
+
 # [2.0.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v1.4.0...v2.0.0) (2025-10-09)
 
 
