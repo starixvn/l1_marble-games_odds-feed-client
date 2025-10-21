@@ -4,7 +4,7 @@ export type Constructor<T> = {
 
 export interface DiContainer {
 
-    register<T>({
+    register<T = any>({
         registerType,
         key,
         value,
@@ -12,7 +12,7 @@ export interface DiContainer {
     }: {
         registerType: "class" | "function" | "value" | "alias",
         key: string | Symbol,
-        value?: Constructor<T> | ((...args: any[]) => T) | Promise<T> | string,
+        value?: Constructor<T> | ((...args: any[]) => T) | Promise<T> | string | T,
         disposer?: (service: T) => void | Promise<void>,
     }): void;
 

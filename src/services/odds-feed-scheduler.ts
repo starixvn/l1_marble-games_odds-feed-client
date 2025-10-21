@@ -49,7 +49,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         const key = this.composeKey(OddsFeedEventName.EventStart, event.eventID, 0);
         this.scheduler.schedule(
             eventStart, 
-            this.handleEventStart.bind(this, event), {
+            this.emitEventStart.bind(this, event), {
             keyOverride: key,
         });
     }
@@ -63,7 +63,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         const key = this.composeKey(OddsFeedEventName.EventDetailStart, event.eventID, index);
         this.scheduler.schedule(
             eventDetailStart,
-            this.handleEventDetailStart.bind(this, event, index), {
+            this.emitEventDetailStart.bind(this, event, index), {
             keyOverride: key,
         });
     }
@@ -73,7 +73,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         const key = this.composeKey(OddsFeedEventName.EventDetailOddsAvailable, event.eventID, index);
         this.scheduler.schedule(
             eventDetailOddsAvailable, 
-            this.handleEventDetailOddsAvailable.bind(this, event, index), {
+            this.emitEventDetailOddsAvailable.bind(this, event, index), {
             keyOverride: key,
         });
     }
@@ -83,12 +83,12 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         const key = this.composeKey(OddsFeedEventName.EventDetailResultsAvailable, event.eventID, index);
         this.scheduler.schedule(
             eventDetailResultsAvailable, 
-            this.handleEventDetailResultsAvailable.bind(this, event, index), {
+            this.emitEventDetailResultsAvailable.bind(this, event, index), {
             keyOverride: key,
         });
     }
 
-    protected async handleEventStart(event: oddsFeedEvent) {
+    protected async emitEventStart(event: oddsFeedEvent) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
@@ -96,7 +96,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         this.oddsFeedEventSource.emitEventStart(updatedEvent);
     }
 
-    protected async handleEventDetailStart(event: oddsFeedEvent, index: number) {
+    protected async emitEventDetailStart(event: oddsFeedEvent, index: number) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
@@ -104,7 +104,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         this.oddsFeedEventSource.emitEventDetailStart(updatedEvent, index);
     }
 
-    protected async handleEventDetailOddsAvailable(event: oddsFeedEvent, index: number) {
+    protected async emitEventDetailOddsAvailable(event: oddsFeedEvent, index: number) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (!updatedEvent) {
             return;
@@ -112,20 +112,20 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
         this.oddsFeedEventSource.emitEventDetailOddsAvailable(updatedEvent, index);
     }
     
-    protected async handleEventDetailResultsAvailable(event: oddsFeedEvent, index: number, retry = 3) {
+    protected async emitEventDetailResultsAvailable(event: oddsFeedEvent, index: number, retry = 3) {
         const updatedEvent = await this.pullEventAndUpdateStore(event);
         if (retry < 0) {
-            console.error(`Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`);
+            this.logService.logError(`Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`);
             return;
         }
 
         if (!updatedEvent) {
-            await this.handleEventDetailResultsAvailable(event, index, retry - 1);
+            await this.emitEventDetailResultsAvailable(event, index, retry - 1);
             return;
         }
 
         if (isNullOrUndefinedOrEmpty(updatedEvent.eventDetails[index].result)) {
-            await this.handleEventDetailResultsAvailable(event, index, retry - 1);
+            await this.emitEventDetailResultsAvailable(event, index, retry - 1);
             return;
         }
 

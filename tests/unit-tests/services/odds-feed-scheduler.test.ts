@@ -210,7 +210,6 @@ describe("oddsFeedScheduler", () => {
                 .mockResolvedValueOnce(undefined)
                 .mockResolvedValueOnce(undefined) } as any;
             const svc = new oddsFeedSchedulerImpl({ oddsFeedEventSource, scheduler: schedulerMock, oddsFeedPullService, logService });
-            const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
             // Act
             svc.scheduleEvent(event);
@@ -219,8 +218,7 @@ describe("oddsFeedScheduler", () => {
 
             // Assert
             expect(oddsFeedEventSource.emitEventDetailResultsAvailable).not.toHaveBeenCalled();
-            expect(consoleErrorSpy).toHaveBeenCalled();
-            consoleErrorSpy.mockRestore();
+            expect(logService.logError).toHaveBeenCalled();
         });
     });
 });

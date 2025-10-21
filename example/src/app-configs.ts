@@ -9,5 +9,5 @@ export const appConfigs = {
         logIdentifier: "odds-feed-Client-Example",
         env: "DEV",
         debug: true
-    },
+    }
 }

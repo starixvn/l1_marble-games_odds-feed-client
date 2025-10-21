@@ -6,6 +6,5 @@ export * from "./odds-feed-event-source";
 export * from "./odds-feed-cron";
 export * from "./odds-feed-pull-service";
 export * from "./odds-feed-scheduler";
-export * from "./odds-feed-store";
 export * from "./event-cleaner-service";
 export * from "./marble-logger-service";

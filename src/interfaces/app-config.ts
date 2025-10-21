@@ -4,6 +4,12 @@ interface AppConfigs {
         operatorId: string;
         password: string;
     };
+    sentry: {
+        sentryUrl: string;
+        logIdentifier: string;
+        env: string;
+        debug?: boolean;
+    };
 }
   
 export { AppConfigs };

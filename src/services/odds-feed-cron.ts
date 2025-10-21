@@ -42,12 +42,20 @@ export class OddsFeedCronImpl implements OddsFeedCron {
     
     public async schedule() {
         const upcomingEvents = await this.oddsFeedPullService.pullUpcoming();
-        upcomingEvents.forEach( async (event) => {
-            const eventWithDetails = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID);
+        for (const upcomingEvent of upcomingEvents) {
+            void this.scheduleEvent(upcomingEvent);
+        }
+    }
+
+    public async scheduleEvent({ eventID }: { eventID: number }): Promise<void> {
+        try {
+            const eventWithDetails = await this.oddsFeedPullService.pullEventWithEventDetails(eventID);
             if (!eventWithDetails) {
                 return;
             }
             this.oddsFeedScheduler.scheduleEvent(eventWithDetails);
-        });
+        } catch (error) {
+            this.logService.logError(`Failed to schedule event ${eventID}: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 }
