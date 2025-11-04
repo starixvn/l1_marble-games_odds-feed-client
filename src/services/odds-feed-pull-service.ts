@@ -21,12 +21,8 @@ export class OddsFeedPullServiceImpl<TEvent extends Event = Event> implements Od
 
   async pullUpcoming() {
     const upcomingEvents = await this.oddsFeedService.fetchSchedule();
-    const filteredEvents = (upcomingEvents as TEvent[]).filter(this.oddsFeedFilter);
-    filteredEvents.forEach((event) => {
-      const gameId = idHelper.extractGameId(event.eventID);
-    });
 
-    return filteredEvents;
+    return (upcomingEvents as TEvent[]).filter(this.oddsFeedFilter);
   }
 
   async pullEventWithEventDetails(eventId: number) {

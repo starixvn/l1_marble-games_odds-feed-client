@@ -81,10 +81,10 @@ function register<TEvent extends Event = Event>(
   });
 }
 
-function init(container: DiContainer) {
+function init(container: DiContainer, startCurrentEvents = false) {
   container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
   container.resolve<EventCleanerService>("eventCleanerService").initEvent();
-  container.resolve<OddsFeedCron>("oddsFeedCron").start();
+  container.resolve<OddsFeedCron>("oddsFeedCron").start(startCurrentEvents);
 }
 
 export { register, init };
