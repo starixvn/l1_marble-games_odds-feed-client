@@ -1,6 +1,6 @@
 {
   "name": "odds-feed-client",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Event-based odds feed client",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -43,7 +43,7 @@
     }
   },
   "engines": {
-    "node": ">=22.14.0"
+    "node": ">=20.9.0"
   },
   "scripts": {
     "build": "rimraf lib && tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
