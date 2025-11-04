@@ -1,17 +1,11 @@
 import { Event } from "@/domain";
 import { retry } from "@/utils";
-import { 
-    AppConfigs, 
-    Logger, 
-    OddsFeedService,
-    MarbleLoggerService
-} from "@/interfaces";
+import { AppConfigs, Logger, OddsFeedService, MarbleLoggerService } from "@/interfaces";
 
 interface OddsFeedServiceContainer {
   logService: Logger;
   appConfigs: AppConfigs;
   marbleLoggerService: MarbleLoggerService;
-
 }
 
 export class OddsFeedServiceImpl implements OddsFeedService {
@@ -25,7 +19,7 @@ export class OddsFeedServiceImpl implements OddsFeedService {
     this.appConfigs = container.appConfigs;
     this.marbleLoggerService = container.marbleLoggerService;
   }
-  
+
   async fetchSchedule(retries = 3, delay = 1000, { eventId }: { eventId?: number } = {}): Promise<Event[]> {
     try {
       return await retry(() => this.getSchedule(), retries, delay);
@@ -48,7 +42,7 @@ export class OddsFeedServiceImpl implements OddsFeedService {
       return null;
     }
   }
-  
+
   async getRemoteJson<T>(url: string, annotation: { eventId?: number }, retries = 3, delay = 1000): Promise<T | null> {
     try {
       const response = await retry(() => fetch(url), retries, delay);
