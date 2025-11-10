@@ -1,3 +1,10 @@
+# [3.1.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.0.0...v3.1.0) (2025-11-10)
+
+
+### Features
+
+* enhance OddsFeedCron to initialize current events when needed - Epic GL-5982 ([8913502](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/891350259965504ebcc308773b7ba53c1171c3fd))
+
 # [3.0.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v2.0.0...v3.0.0) (2025-10-21)
 
 
