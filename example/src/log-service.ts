@@ -1,52 +1,45 @@
-import { OddsFeedEventSource, OddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
+import {
+  OddsFeedEventSource,
+  OddsFeedEventName,
+  EventListener,
+  EventNotification,
+  EventDetailNotification,
+  EventDetailListener,
+} from "odds-feed-client";
 
 interface LogServiceContainer {
-    oddsFeedEventSource: OddsFeedEventSource;
+  oddsFeedEventSource: OddsFeedEventSource;
 }
 
 export class LogService {
-    private readonly oddsFeedEventSource: OddsFeedEventSource;
+  private readonly oddsFeedEventSource: OddsFeedEventSource;
 
-    private readonly boundHandleEventUpcoming: EventListener;
-    private readonly boundHandleEventDetailUpComing: EventDetailListener;
-    
-    constructor(
-        container: LogServiceContainer,
-    ) {
-        this.oddsFeedEventSource = container.oddsFeedEventSource;
-        this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
-        this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
-    }
+  private readonly boundHandleEventUpcoming: EventListener;
+  private readonly boundHandleEventDetailUpComing: EventDetailListener;
 
-    init() {
-        this.oddsFeedEventSource.eventOn(
-            OddsFeedEventName.EventUpcoming,
-            this.boundHandleEventUpcoming
-        )
-        this.oddsFeedEventSource.eventDetailOn(
-            OddsFeedEventName.EventDetailUpComing,
-            this.boundHandleEventDetailUpComing
-        )
-    }
+  constructor(container: LogServiceContainer) {
+    this.oddsFeedEventSource = container.oddsFeedEventSource;
+    this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
+    this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
+  }
 
-    dispose() {
-        this.oddsFeedEventSource.eventOff(
-            OddsFeedEventName.EventUpcoming,
-            this.boundHandleEventUpcoming
-        )
-        this.oddsFeedEventSource.eventDetailOff(
-            OddsFeedEventName.EventDetailUpComing,
-            this.boundHandleEventDetailUpComing
-        )
-    }
+  init() {
+    this.oddsFeedEventSource.eventOn(OddsFeedEventName.EventUpcoming, this.boundHandleEventUpcoming);
+    this.oddsFeedEventSource.eventDetailOn(OddsFeedEventName.EventDetailUpComing, this.boundHandleEventDetailUpComing);
+  }
 
-    handleEventUpcoming({ event }: EventNotification ) {
-        console.log(new Date().toISOString());
-        console.log("Event Upcoming", event.scheduleStartTs);
-    }
+  dispose() {
+    this.oddsFeedEventSource.eventOff(OddsFeedEventName.EventUpcoming, this.boundHandleEventUpcoming);
+    this.oddsFeedEventSource.eventDetailOff(OddsFeedEventName.EventDetailUpComing, this.boundHandleEventDetailUpComing);
+  }
 
-    handleEventDetailUpComing({ event, index }: EventDetailNotification) {
-        console.log(new Date().toISOString());
-        console.log("Event Detail Up Coming", event.scheduleStartTs, index);
-    }
+  handleEventUpcoming({ event }: EventNotification) {
+    console.log(new Date().toISOString());
+    console.log("Event Upcoming", event.scheduleStartTs);
+  }
+
+  handleEventDetailUpComing({ event, index }: EventDetailNotification) {
+    console.log(new Date().toISOString());
+    console.log("Event Detail Up Coming", event.scheduleStartTs, index);
+  }
 }

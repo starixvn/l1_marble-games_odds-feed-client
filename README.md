@@ -24,10 +24,10 @@ If you don't use Awilix, you must inherit interface DiContainer
 import { DiContainer } from "odds-feed-client/container";
 ```
 
-
 ## Quick start (TypeScript)
 
 Overview of this is:
+
 - Write event event handling code for you own service.
 - Create container and bind dependencies (currently Awilix is the most optimal)
 - Register event from the oddsFeedEventSource
@@ -38,7 +38,6 @@ You could refer to the example code in this repo at the /example folder
 ### Prepare your appConfigs
 
 The app config requires both Odds Feed and Sentry Credential to be able to function normally.
-
 
 ```ts
 const appConfigs = {
@@ -57,65 +56,58 @@ const appConfigs = {
 ```
 
 ### Develop your own services to get data from the odds feed event source.
+
 Develop your own service to meet the business requirement. For example, this is a log service.
 
 And this is also a recommended pattern.
 
 ```ts
-import { OddsFeedEventSource, OddsFeedEventName, EventListener, EventNotification, EventDetailNotification, EventDetailListener } from "odds-feed-client";
+import {
+  OddsFeedEventSource,
+  OddsFeedEventName,
+  EventListener,
+  EventNotification,
+  EventDetailNotification,
+  EventDetailListener,
+} from "odds-feed-client";
 
 interface LogServiceContainer {
-    oddsFeedEventSource: OddsFeedEventSource;
+  oddsFeedEventSource: OddsFeedEventSource;
 }
 
 export class LogService {
-    private readonly oddsFeedEventSource: OddsFeedEventSource;
+  private readonly oddsFeedEventSource: OddsFeedEventSource;
 
-    private readonly boundHandleEventUpcoming: EventListener;
-    private readonly boundHandleEventDetailUpComing: EventDetailListener;
-    
-    constructor(
-        container: LogServiceContainer,
-    ) {
-        this.oddsFeedEventSource = container.oddsFeedEventSource;
-        this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
-        this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
-    }
+  private readonly boundHandleEventUpcoming: EventListener;
+  private readonly boundHandleEventDetailUpComing: EventDetailListener;
 
-    init() {
-        this.oddsFeedEventSource.eventOn(
-            OddsFeedEventName.EventUpcoming,
-            this.boundHandleEventUpcoming
-        )
-        this.oddsFeedEventSource.eventDetailOn(
-            OddsFeedEventName.EventDetailUpComing,
-            this.boundHandleEventDetailUpComing
-        )
-    }
+  constructor(container: LogServiceContainer) {
+    this.oddsFeedEventSource = container.oddsFeedEventSource;
+    this.boundHandleEventUpcoming = this.handleEventUpcoming.bind(this);
+    this.boundHandleEventDetailUpComing = this.handleEventDetailUpComing.bind(this);
+  }
 
-    dispose() {
-        this.oddsFeedEventSource.eventOff(
-            OddsFeedEventName.EventUpcoming,
-            this.boundHandleEventUpcoming
-        )
-        this.oddsFeedEventSource.eventDetailOff(
-            OddsFeedEventName.EventDetailUpComing,
-            this.boundHandleEventDetailUpComing
-        )
-    }
+  init() {
+    this.oddsFeedEventSource.eventOn(OddsFeedEventName.EventUpcoming, this.boundHandleEventUpcoming);
+    this.oddsFeedEventSource.eventDetailOn(OddsFeedEventName.EventDetailUpComing, this.boundHandleEventDetailUpComing);
+  }
 
-    handleEventUpcoming({ event }: EventNotification ) {
-        console.log(new Date().toISOString());
-        console.log("Event Upcoming", event.scheduleStartTs);
-    }
+  dispose() {
+    this.oddsFeedEventSource.eventOff(OddsFeedEventName.EventUpcoming, this.boundHandleEventUpcoming);
+    this.oddsFeedEventSource.eventDetailOff(OddsFeedEventName.EventDetailUpComing, this.boundHandleEventDetailUpComing);
+  }
 
-    handleEventDetailUpComing({ event, index }: EventDetailNotification) {
-        console.log(new Date().toISOString());
-        console.log("Event Detail Up Coming", event.scheduleStartTs, index);
-    }
+  handleEventUpcoming({ event }: EventNotification) {
+    console.log(new Date().toISOString());
+    console.log("Event Upcoming", event.scheduleStartTs);
+  }
+
+  handleEventDetailUpComing({ event, index }: EventDetailNotification) {
+    console.log(new Date().toISOString());
+    console.log("Event Detail Up Coming", event.scheduleStartTs, index);
+  }
 }
 ```
-
 
 ### Create dependencies helper
 
@@ -125,7 +117,6 @@ These functions should be in folder container-registry.ts (optional and conventi
 
 Best practice: If the project is multi-team maintained, each team handle one container-registry.ts and a set of services that is used in that file, this will reduce Git model complexity since each team manage their own files.
 
-
 ```ts
 import { DiContainer } from "odds-feed-client/container";
 import { appConfigs } from "./app-configs";
@@ -133,27 +124,27 @@ import { LogService } from "./log-service";
 import { CustomLogger } from "./logger";
 
 export function registerLogServices(diContainer: DiContainer) {
-    diContainer.register({
-        registerType: "class",
-        key: "logService",
-        value: LogService,
-    });
-    
-    diContainer.register({
-        registerType: "class",
-        key: "logger",
-        value: CustomLogger,
-    });
-    
-    diContainer.register({
-        registerType: "value",
-        key: "appConfigs",
-        value: appConfigs,
+  diContainer.register({
+    registerType: "class",
+    key: "logService",
+    value: LogService,
+  });
+
+  diContainer.register({
+    registerType: "class",
+    key: "logger",
+    value: CustomLogger,
+  });
+
+  diContainer.register({
+    registerType: "value",
+    key: "appConfigs",
+    value: appConfigs,
   });
 }
 
 export function initLogServices(diContainer: DiContainer) {
-    diContainer.resolve<LogService>("logService").init();
+  diContainer.resolve<LogService>("logService").init();
 }
 ```
 
@@ -171,25 +162,22 @@ import { registerLogServices, initLogServices } from "./container-registry";
 
 const container = createContainer();
 
-
 const diContainer = new AwilixDIContainer(container);
 
 register(diContainer);
 registerLogServices(diContainer);
 init(diContainer);
 initLogServices(diContainer);
-
-
-
 ```
 
 ### Configs:
 
 #### Odds Feed Filter
+
 - You can filter what event to be processed by injecting odds feed filter to the container.
 
 ```ts
-import { register } from "odds-feed-client/dependency-injection"
+import { register } from "odds-feed-client/dependency-injection";
 import { createContainer } from "awilix";
 import { AwilixDIContainer } from "odds-feed-client/awilix";
 
@@ -197,9 +185,8 @@ const container = createContainer();
 const diContainer = new AwilixDIContainer(container);
 
 register<MarbleEvent>(diContainer, {
-        oddsFeedFilter,
-    });
-
+  oddsFeedFilter,
+});
 ```
 
 #### Event Queue Max Length
@@ -216,11 +203,9 @@ const container = createContainer();
 const diContainer = new AwilixDIContainer(container);
 
 register(diContainer, {
-    eventQueueMaxLength: 2
+  eventQueueMaxLength: 2,
 });
-
 ```
-
 
 ## Architecture Map
 
@@ -452,7 +437,6 @@ export interface SystemNotification {
 - **Event Emission**: Triggers appropriate events at scheduled times
 - **Retry Logic**: Built-in retry for result availability
 
-
 #### EventCleanerService (`src/services/event-cleaner-service.ts`)
 
 - **Memory Management**: Prevents memory leaks by cleaning old events
@@ -512,9 +496,7 @@ oddsFeedFilter -> Function (configurable)
 
 ```typescript
 // ❌ Before (src/services/odds-feed-scheduler.ts:118)
-console.error(
-  `Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`
-);
+console.error(`Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`);
 
 // ✅ After
 this.logService.error(
@@ -525,10 +507,7 @@ this.logService.error(
 console.log(`Cleaning up event ${eventId} for game ${gameId}`);
 
 // ✅ After
-this.marbleLoggerService.log(
-  `Cleaning up event ${eventId} for game ${gameId}`,
-  { eventId }
-);
+this.marbleLoggerService.log(`Cleaning up event ${eventId} for game ${gameId}`, { eventId });
 ```
 
 ### Medium Priority Improvements
@@ -547,4 +526,3 @@ this.marbleLoggerService.log(
 ## Requirements
 
 - Node.js >= 18
-

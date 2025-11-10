@@ -2,56 +2,54 @@ import { OddsFeedPullServiceImpl as oddsFeedPullServiceImpl } from "@/services";
 import { idHelper } from "@/utils";
 
 describe("oddsFeedPullService", () => {
-    describe("pullUpcoming", () => {
-        it("stores upcoming events by game id and returns list", async () => {
-            // Arrange
-            const eventA = { eventID: idHelper.createEventId(2, 10) } as any;
-            const eventB = { eventID: idHelper.createEventId(3, 11) } as any;
-            const oddsFeedService = { fetchSchedule: jest.fn().mockResolvedValue([eventA, eventB]) } as any;
-            const logService = { logError: jest.fn() } as any;
-            const oddsFeedFilter = () => true;
-            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
+  describe("pullUpcoming", () => {
+    it("stores upcoming events by game id and returns list", async () => {
+      // Arrange
+      const eventA = { eventID: idHelper.createEventId(2, 10) } as any;
+      const eventB = { eventID: idHelper.createEventId(3, 11) } as any;
+      const oddsFeedService = { fetchSchedule: jest.fn().mockResolvedValue([eventA, eventB]) } as any;
+      const logService = { logError: jest.fn() } as any;
+      const oddsFeedFilter = () => true;
+      const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
 
-            // Act
-            const result = await svc.pullUpcoming();
+      // Act
+      const result = await svc.pullUpcoming();
 
-            // Assert
-            expect(result).toEqual([eventA, eventB]);
-        });
+      // Assert
+      expect(result).toEqual([eventA, eventB]);
+    });
+  });
+
+  describe("pullEventWithEventDetails", () => {
+    it("returns undefined and logs when details not available", async () => {
+      // Arrange
+      const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(undefined) } as any;
+      const logService = { logError: jest.fn() } as any;
+      const oddsFeedFilter = () => true;
+      const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
+
+      // Act
+      const result = await svc.pullEventWithEventDetails(123);
+
+      // Assert
+      expect(result).toBeUndefined();
+      expect(logService.logError).toHaveBeenCalled();
     });
 
-    describe("pullEventWithEventDetails", () => {
-        it("returns undefined and logs when details not available", async () => {
-            // Arrange
-            const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(undefined) } as any;
-            const logService = { logError: jest.fn() } as any;
-            const oddsFeedFilter = () => true;
-            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
+    it("stores and returns event when details available", async () => {
+      // Arrange
+      const event = { eventID: idHelper.createEventId(9, 1) } as any;
+      const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(event) } as any;
+      const logService = { logError: jest.fn() } as any;
+      const oddsFeedFilter = () => true;
+      const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
 
-            // Act
-            const result = await svc.pullEventWithEventDetails(123);
+      // Act
+      const result = await svc.pullEventWithEventDetails(event.eventID);
 
-            // Assert
-            expect(result).toBeUndefined();
-            expect(logService.logError).toHaveBeenCalled();
-        });
-
-        it("stores and returns event when details available", async () => {
-            // Arrange
-            const event = { eventID: idHelper.createEventId(9, 1) } as any;
-            const oddsFeedService = { fetchEventDetails: jest.fn().mockResolvedValue(event) } as any;
-            const logService = { logError: jest.fn() } as any;
-            const oddsFeedFilter = () => true;
-            const svc = new oddsFeedPullServiceImpl({ oddsFeedService, logService, oddsFeedFilter });
-
-            // Act
-            const result = await svc.pullEventWithEventDetails(event.eventID);
-
-            // Assert
-            expect(result).toEqual(event);
-            expect(logService.logError).not.toHaveBeenCalled();
-        });
+      // Assert
+      expect(result).toEqual(event);
+      expect(logService.logError).not.toHaveBeenCalled();
     });
+  });
 });
-
-

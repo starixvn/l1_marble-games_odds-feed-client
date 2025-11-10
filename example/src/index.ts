@@ -9,9 +9,8 @@ const container = createContainer();
 const diContainer = new AwilixDIContainer(container);
 
 register(diContainer, {
-    eventQueueMaxLength: 2
+  eventQueueMaxLength: 2,
 });
 registerLogServices(diContainer);
 init(diContainer);
 initLogServices(diContainer);
-
