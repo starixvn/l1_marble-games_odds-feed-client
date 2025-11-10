@@ -1,5 +1,5 @@
 export interface OddsFeedCron {
-    start(): Promise<void>;
-    schedule(): Promise<void>;
-    scheduleEvent({ eventID }: { eventID: number }): Promise<void>;
+  start(startCurrentEvents?: boolean): Promise<void>;
+  schedule(): Promise<void>;
+  scheduleEvent({ eventID }: { eventID: number }): Promise<void>;
 }
