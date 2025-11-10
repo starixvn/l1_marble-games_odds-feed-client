@@ -1,3 +1,10 @@
+# [3.3.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.2.0...v3.3.0) (2025-11-10)
+
+
+### Features
+
+* add optional eventConfig to Event type - Epic GL-5982 ([3ab5ae6](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/3ab5ae67c22dd450042057314e5fa6b36d1c5130))
+
 # [3.2.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.1.0...v3.2.0) (2025-11-10)
 
 
