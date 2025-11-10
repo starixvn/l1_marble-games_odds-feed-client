@@ -3,74 +3,66 @@ import { OddsFeedEventName as oddsFeedEventName } from "@/interfaces";
 import { idHelper } from "@/utils";
 
 describe("EventCleanerService", () => {
-    const eventQueueMaxLength = 10;
-    
-    describe("initEvent", () => {
-        it("registers EventStart listener", () => {
-            // Arrange
-            const oddsFeedEventSource = {
-                eventOn: jest.fn(),
-                eventOff: jest.fn(),
-                emitDataCleanup: jest.fn(),
-            } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
+  const eventQueueMaxLength = 10;
 
-            // Act
-            service.initEvent();
+  describe("initEvent", () => {
+    it("registers EventStart listener", () => {
+      // Arrange
+      const oddsFeedEventSource = {
+        eventOn: jest.fn(),
+        eventOff: jest.fn(),
+        emitDataCleanup: jest.fn(),
+      } as any;
+      const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
 
-            // Assert
-            expect(oddsFeedEventSource.eventOn).toHaveBeenCalledWith(
-                oddsFeedEventName.EventStart,
-                expect.any(Function)
-            );
-        });
+      // Act
+      service.initEvent();
+
+      // Assert
+      expect(oddsFeedEventSource.eventOn).toHaveBeenCalledWith(oddsFeedEventName.EventStart, expect.any(Function));
     });
+  });
 
-    describe("dispose", () => {
-        it("unregister EventStart listener", () => {
-            // Arrange
-            const oddsFeedEventSource = {
-                eventOn: jest.fn(),
-                eventOff: jest.fn(),
-                emitDataCleanup: jest.fn(),
-            } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
-            service.initEvent();
-            const registered = (oddsFeedEventSource.eventOn as jest.Mock).mock.calls[0][1];
+  describe("dispose", () => {
+    it("unregister EventStart listener", () => {
+      // Arrange
+      const oddsFeedEventSource = {
+        eventOn: jest.fn(),
+        eventOff: jest.fn(),
+        emitDataCleanup: jest.fn(),
+      } as any;
+      const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
+      service.initEvent();
+      const registered = (oddsFeedEventSource.eventOn as jest.Mock).mock.calls[0][1];
 
-            // Act
-            service.dispose();
+      // Act
+      service.dispose();
 
-            // Assert
-            expect(oddsFeedEventSource.eventOff).toHaveBeenCalledWith(
-                oddsFeedEventName.EventStart,
-                registered
-            );
-        });
+      // Assert
+      expect(oddsFeedEventSource.eventOff).toHaveBeenCalledWith(oddsFeedEventName.EventStart, registered);
     });
+  });
 
-    describe("handleEventStart", () => {
-        it("enqueues events and triggers cleanup when exceeding max length", () => {
-            // Arrange
-            const oddsFeedEventSource = {
-                eventOn: jest.fn(),
-                eventOff: jest.fn(),
-                emitDataCleanup: jest.fn(),
-            } as any;
-            const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
-            const gameId = 1;
-            const firstEventId = idHelper.createEventId(gameId, 0);
+  describe("handleEventStart", () => {
+    it("enqueues events and triggers cleanup when exceeding max length", () => {
+      // Arrange
+      const oddsFeedEventSource = {
+        eventOn: jest.fn(),
+        eventOff: jest.fn(),
+        emitDataCleanup: jest.fn(),
+      } as any;
+      const service = new EventCleanerServiceImpl({ oddsFeedEventSource, eventQueueMaxLength: 10 });
+      const gameId = 1;
+      const firstEventId = idHelper.createEventId(gameId, 0);
 
-            // Act
-            for (let i = 0; i < eventQueueMaxLength + 1; i++) {
-                const eventID = idHelper.createEventId(gameId, i);
-                service.handleEventStart({ event: { eventID } as any });
-            }
+      // Act
+      for (let i = 0; i < eventQueueMaxLength + 1; i++) {
+        const eventID = idHelper.createEventId(gameId, i);
+        service.handleEventStart({ event: { eventID } as any });
+      }
 
-            // Assert
-            expect(oddsFeedEventSource.emitDataCleanup).toHaveBeenCalledWith(firstEventId);
-        });
+      // Assert
+      expect(oddsFeedEventSource.emitDataCleanup).toHaveBeenCalledWith(firstEventId);
     });
+  });
 });
-
-

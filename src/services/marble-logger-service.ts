@@ -4,6 +4,7 @@ import { MarbleLoggerService, MarbleLoggerInitConfig, MarbleLogAnnotation } from
 
 interface MarbleLoggerContainer {
   appConfigs: AppConfigs;
+  debug?: boolean;
 }
 
 interface AppConfigs {
@@ -16,19 +17,27 @@ interface AppConfigs {
 }
 
 export class MarbleLoggerServiceImpl implements MarbleLoggerService {
-  private _dsn = "";
-  private _logIdentifier = "";
-  private _env = "";
-  private _debug = false;
+  private readonly _dsn: string = "";
+  private readonly _logIdentifier: string = "";
+  private readonly _env: string = "";
+  private readonly _debug: boolean = false;
+  private readonly _sentry: boolean = false;
 
   constructor(container: MarbleLoggerContainer) {
+    this._sentry = !!container.appConfigs.sentry;
+    if (!this._sentry) {
+      return;
+    }
     this._dsn = container.appConfigs.sentry.sentryUrl;
     this._logIdentifier = container.appConfigs.sentry.logIdentifier;
     this._env = container.appConfigs.sentry.env;
-    this._debug = container.appConfigs.sentry.debug ?? false;
+    this._debug = container.appConfigs.sentry.debug ?? container.debug ?? false;
   }
 
-  init({ sentryRelease = "", tracesSampleRate = 1.0, debug = false }: MarbleLoggerInitConfig = {}) {
+  init({ sentryRelease = "", tracesSampleRate = 1 }: MarbleLoggerInitConfig = {}) {
+    if (!this._sentry) {
+      return;
+    }
     init({
       dsn: this._dsn,
       environment: this._env,
@@ -37,30 +46,38 @@ export class MarbleLoggerServiceImpl implements MarbleLoggerService {
       attachStacktrace: true,
       release: sentryRelease,
     });
-    this._debug = debug;
   }
 
   public log(message: string, annotation?: MarbleLogAnnotation) {
+    this.developmentDebugLog(message, annotation);
+    if (!this._sentry) {
+      return;
+    }
     this.setTagByAnnotation(annotation);
     captureMessage(message, "log");
-    this.developmentDebugLog(message, annotation);
   }
 
   public error(error: Error, annotation?: MarbleLogAnnotation) {
+    this.developmentDebugLog(error.message, annotation);
+    if (!this._sentry) {
+      return;
+    }
     this.setTagByAnnotation(annotation);
 
     captureException(error);
-    this.developmentDebugLog(error.message, annotation);
   }
 
   public warning(message: string, annotation?: MarbleLogAnnotation) {
+    this.developmentDebugLog(message, annotation);
+    if (!this._sentry) {
+      return;
+    }
     this.setTagByAnnotation(annotation);
     captureMessage(message, "warning");
-    this.developmentDebugLog(message, annotation);
   }
 
   public debug(message: string, annotation?: MarbleLogAnnotation) {
-    if (!this._debug) {
+    if (!this._debug || !this._sentry) {
       return;
     }
 

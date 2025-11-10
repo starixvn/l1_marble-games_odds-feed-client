@@ -4,25 +4,25 @@ import { LogService } from "./log-service";
 import { CustomLogger } from "./logger";
 
 export function registerLogServices(diContainer: DiContainer) {
-    diContainer.register({
-        registerType: "class",
-        key: "logService",
-        value: LogService,
-    });
-    
-    diContainer.register({
-        registerType: "class",
-        key: "logger",
-        value: CustomLogger,
-    });
-    
-    diContainer.register({
-        registerType: "value",
-        key: "appConfigs",
-        value: appConfigs,
+  diContainer.register({
+    registerType: "class",
+    key: "logService",
+    value: LogService,
+  });
+
+  diContainer.register({
+    registerType: "class",
+    key: "logger",
+    value: CustomLogger,
+  });
+
+  diContainer.register({
+    registerType: "value",
+    key: "appConfigs",
+    value: appConfigs,
   });
 }
 
 export function initLogServices(diContainer: DiContainer) {
-    diContainer.resolve<LogService>("logService").init();
+  diContainer.resolve<LogService>("logService").init();
 }
