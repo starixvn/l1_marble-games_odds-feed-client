@@ -8,6 +8,7 @@ export type Event = {
   productTypeKey: string;
   eventDetails: EventDetail[];
   voiceConfig?: string;
+  eventConfig?: Record<string, any>;
 };
 
 export type EventDetail = {
