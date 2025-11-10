@@ -1,3 +1,10 @@
+# [3.2.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.1.0...v3.2.0) (2025-11-10)
+
+
+### Features
+
+* optional sentry logger (to NOT call sentry when we don't need it) ([60a366f](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/60a366ff6b2c4088f2b21f6243fd8bc7aad418fa))
+
 # [3.1.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.0.0...v3.1.0) (2025-11-10)
 
 
