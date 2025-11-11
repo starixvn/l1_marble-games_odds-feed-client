@@ -18,10 +18,12 @@ export class SchedulerImpl implements Scheduler {
       key?: string;
       keyOverride?: string;
       ignorePast?: boolean;
+      overrideNow?: number;
     }
   ): string {
-    const now = new Date();
-    const diff = time.getTime() - now.getTime();
+    const now = 
+      options?.overrideNow ?? Date.now();
+    const diff = time.getTime() - now;
     const key = options?.key ?? callback.name;
     const id = options?.keyOverride ?? this.composeKeyWithTime(key, time);
     if (this.tasks[id]) {
@@ -33,8 +35,7 @@ export class SchedulerImpl implements Scheduler {
       return id;
     }
 
-    const actualDiff = diff >= 0 ? diff : 0;
-
+    const actualDiff = Math.max(diff, 0);
     const timeoutId = setTimeout(this.processCallback(callback, id), actualDiff);
     this.tasks[id] = { callback, timeoutId: timeoutId as unknown as NodeJS.Timeout };
     this.log(`Scheduled task ${id} at ${time}`);
@@ -50,7 +51,9 @@ export class SchedulerImpl implements Scheduler {
   }
 
   public dispose() {
-    Object.keys(this.tasks).forEach((task) => this.cancel(task));
+    for (const task of Object.keys(this.tasks)) {
+      this.cancel(task);
+    }
   }
 
   private processCallback(callback: Function, id: string) {

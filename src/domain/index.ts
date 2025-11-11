@@ -8,6 +8,7 @@ export type Event = {
   productTypeKey: string;
   eventDetails: EventDetail[];
   voiceConfig?: string;
+  now?: number;
   eventConfig?: Record<string, any>;
 };
 
@@ -20,7 +21,17 @@ export type EventDetail = {
   goalInfo: string;
   playlist: string;
   result: string;
-  markets: any;
+  markets: Market[];
   inGameEventInfo: string;
   phase: number;
 };
+
+type Market = {
+  selections: Selection[];
+}
+
+type Selection = {
+  price: string;
+  point: number;
+  settlementStatus: "W" | "L" | "P";
+}

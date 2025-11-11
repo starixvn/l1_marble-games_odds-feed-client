@@ -1,4 +1,3 @@
-import { idHelper } from "@/utils";
 import { Logger, OddsFeedService, OddsFeedPullService } from "@/interfaces";
 import { Event } from "@/domain";
 
@@ -6,6 +5,10 @@ interface OddsFeedPullServiceContainer<TEvent extends Event = Event> {
   oddsFeedService: OddsFeedService;
   logService: Logger;
   oddsFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean;
+}
+
+interface PullContext {
+  validator?: (event: Event) => boolean;
 }
 
 export class OddsFeedPullServiceImpl<TEvent extends Event = Event> implements OddsFeedPullService<TEvent> {
@@ -25,8 +28,8 @@ export class OddsFeedPullServiceImpl<TEvent extends Event = Event> implements Od
     return (upcomingEvents as TEvent[]).filter(this.oddsFeedFilter);
   }
 
-  async pullEventWithEventDetails(eventId: number) {
-    const event = await this.oddsFeedService.fetchEventDetails(eventId);
+  async pullEventWithEventDetails(eventId: number, context?: PullContext) {
+    const event = await this.oddsFeedService.fetchEventDetails(eventId, context?.validator);
     if (!event) {
       this.logService.logError(`Failed to get event details for event ${eventId}`);
       return undefined;
