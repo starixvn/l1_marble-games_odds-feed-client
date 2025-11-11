@@ -53,6 +53,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventStart, event.eventID, 0);
     this.scheduler.schedule(eventStart, this.emitEventStart.bind(this, event), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -65,6 +66,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventDetailStart, event.eventID, index);
     this.scheduler.schedule(eventDetailStart, this.emitEventDetailStart.bind(this, event, index), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -73,6 +75,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventDetailOddsAvailable, event.eventID, index);
     this.scheduler.schedule(eventDetailOddsAvailable, this.emitEventDetailOddsAvailable.bind(this, event, index), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -84,6 +87,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
       this.emitEventDetailResultsAvailable.bind(this, event, index),
       {
         keyOverride: key,
+        overrideNow: event.now
       }
     );
   }
