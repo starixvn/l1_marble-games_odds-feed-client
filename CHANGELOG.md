@@ -1,3 +1,10 @@
+## [3.3.1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.3.0...v3.3.1) (2025-11-11)
+
+
+### Bug Fixes
+
+* move config debug to app config instead ([dddbec7](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/dddbec76af6c8f0a8c6efcebf424153874ab919b))
+
 # [3.3.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.2.0...v3.3.0) (2025-11-10)
 
 
