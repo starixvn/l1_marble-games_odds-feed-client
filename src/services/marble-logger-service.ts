@@ -4,10 +4,10 @@ import { MarbleLoggerService, MarbleLoggerInitConfig, MarbleLogAnnotation } from
 
 interface MarbleLoggerContainer {
   appConfigs: AppConfigs;
-  debug?: boolean;
 }
 
 interface AppConfigs {
+  debug?: boolean;
   sentry: {
     sentryUrl: string;
     logIdentifier: string;
@@ -31,7 +31,7 @@ export class MarbleLoggerServiceImpl implements MarbleLoggerService {
     this._dsn = container.appConfigs.sentry.sentryUrl;
     this._logIdentifier = container.appConfigs.sentry.logIdentifier;
     this._env = container.appConfigs.sentry.env;
-    this._debug = container.appConfigs.sentry.debug ?? container.debug ?? false;
+    this._debug = container.appConfigs.sentry.debug ?? container.appConfigs.debug ?? false;
   }
 
   init({ sentryRelease = "", tracesSampleRate = 1 }: MarbleLoggerInitConfig = {}) {
