@@ -1,3 +1,10 @@
+## [3.4.2](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.1...v3.4.2) (2025-11-12)
+
+
+### Bug Fixes
+
+* use option param object to avoid too much argument when it scales - Epic GL-5337 ([fede34e](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/fede34e9eaf5a74b91281e79df0699ddee7f66d0))
+
 ## [3.4.1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.0...v3.4.1) (2025-11-12)
 
 
