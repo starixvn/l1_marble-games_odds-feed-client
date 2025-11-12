@@ -7,13 +7,16 @@ import {
   OddsFeedEventSource,
   OddsFeedScheduler,
   Logger,
+  PullContext,
 } from "@/interfaces";
+import { oddsValidator, resultValidator } from "../utils/validators";
 
 interface OddsFeedSchedulerContainer {
   oddsFeedEventSource: OddsFeedEventSource<oddsFeedEvent>;
   scheduler: Scheduler;
   oddsFeedPullService: OddsFeedPullService;
   logService: Logger;
+  shouldValidateOdds: boolean;
 }
 
 export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
@@ -21,12 +24,13 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   private readonly scheduler: Scheduler;
   private readonly oddsFeedPullService: OddsFeedPullService;
   private readonly logService: Logger;
-
+  private readonly shouldValidateOdds: boolean;
   constructor(container: OddsFeedSchedulerContainer) {
     this.oddsFeedEventSource = container.oddsFeedEventSource;
     this.scheduler = container.scheduler;
     this.oddsFeedPullService = container.oddsFeedPullService;
     this.logService = container.logService;
+    this.shouldValidateOdds = container.shouldValidateOdds;
   }
 
   public scheduleEventUpcoming(event: oddsFeedEvent) {
@@ -36,12 +40,12 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   public scheduleEvent(event: oddsFeedEvent) {
     this.scheduleEventUpcoming(event);
     this.scheduleEventStart(event);
-    event.eventDetails.forEach((_, index) => {
+    for (let index = 0; index < event.eventDetails.length; index++) {
       this.scheduleEventDetailUpComing(event, index);
       this.scheduleEventDetailStart(event, index);
       this.scheduleEventDetailOddsAvailable(event, index);
       this.scheduleEventDetailResultsAvailable(event, index);
-    });
+    }
   }
 
   protected scheduleEventStart(event: oddsFeedEvent) {
@@ -49,6 +53,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventStart, event.eventID, 0);
     this.scheduler.schedule(eventStart, this.emitEventStart.bind(this, event), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -61,6 +66,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventDetailStart, event.eventID, index);
     this.scheduler.schedule(eventDetailStart, this.emitEventDetailStart.bind(this, event, index), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -69,6 +75,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     const key = this.composeKey(OddsFeedEventName.EventDetailOddsAvailable, event.eventID, index);
     this.scheduler.schedule(eventDetailOddsAvailable, this.emitEventDetailOddsAvailable.bind(this, event, index), {
       keyOverride: key,
+      overrideNow: event.now
     });
   }
 
@@ -80,6 +87,7 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
       this.emitEventDetailResultsAvailable.bind(this, event, index),
       {
         keyOverride: key,
+        overrideNow: event.now
       }
     );
   }
@@ -101,7 +109,8 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   }
 
   protected async emitEventDetailOddsAvailable(event: oddsFeedEvent, index: number) {
-    const updatedEvent = await this.pullEventAndUpdateStore(event);
+    const validator = oddsValidator({ index, shouldValidate: this.shouldValidateOdds });
+    const updatedEvent = await this.pullEventAndUpdateStore(event, { validator });
     if (!updatedEvent) {
       return;
     }
@@ -109,7 +118,8 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   }
 
   protected async emitEventDetailResultsAvailable(event: oddsFeedEvent, index: number, retry = 3) {
-    const updatedEvent = await this.pullEventAndUpdateStore(event);
+    const validator = resultValidator({ index });
+    const updatedEvent = await this.pullEventAndUpdateStore(event, { validator });
     if (retry < 0) {
       this.logService.logError(
         `Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`
@@ -130,8 +140,8 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     this.oddsFeedEventSource.emitEventDetailResultsAvailable(updatedEvent, index);
   }
 
-  protected async pullEventAndUpdateStore(event: oddsFeedEvent) {
-    const updatedEvent = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID);
+  protected async pullEventAndUpdateStore(event: oddsFeedEvent, context?: PullContext) {
+    const updatedEvent = await this.oddsFeedPullService.pullEventWithEventDetails(event.eventID, context);
     if (!updatedEvent) {
       this.logService.logError(`Failed to get event details for event ${event.eventID}`);
       return undefined;

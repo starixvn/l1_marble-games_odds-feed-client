@@ -49,7 +49,7 @@ describe("oddsFeedScheduler", () => {
       const scheduler = { schedule: jest.fn() } as any;
       const oddsFeedPullService = { pullEventWithEventDetails: jest.fn() } as any;
       const logService = { logError: jest.fn() } as any;
-      const svc = new oddsFeedSchedulerImpl({ oddsFeedEventSource, scheduler, oddsFeedPullService, logService });
+      const svc = new oddsFeedSchedulerImpl({ oddsFeedEventSource, scheduler, oddsFeedPullService, logService, shouldValidateOdds: true });
       const event = makeEvent();
 
       // Act
@@ -72,6 +72,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
       const event = makeEvent();
 
@@ -108,6 +109,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -138,6 +140,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -168,6 +171,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -206,6 +210,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -235,6 +240,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -265,6 +271,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -295,6 +302,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act
@@ -333,6 +341,7 @@ describe("oddsFeedScheduler", () => {
         scheduler: schedulerMock,
         oddsFeedPullService,
         logService,
+        shouldValidateOdds: true,
       });
 
       // Act

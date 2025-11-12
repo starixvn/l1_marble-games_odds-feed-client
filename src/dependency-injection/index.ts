@@ -12,19 +12,23 @@ import {
 import { EventCleanerService, MarbleLoggerService, OddsFeedCron } from "@/interfaces";
 import { Event } from "@/domain";
 
+const defaultOptions = {
+  oddsFeedFilter: true,
+  eventQueueMaxLength: 10,
+  shouldValidateOdds: true,
+}
+
 function register<TEvent extends Event = Event>(
   diContainer: DiContainer,
   {
     oddsFeedFilter = true,
     eventQueueMaxLength = 10,
+    shouldValidateOdds = true,
   }: {
     oddsFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
     eventQueueMaxLength?: number;
-  } = {
-    oddsFeedFilter: true,
-    eventQueueMaxLength: 10,
-  }
-) {
+    shouldValidateOdds?: boolean;
+  } = defaultOptions) {
   const normalizedoddsFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
     typeof oddsFeedFilter === "function" ? oddsFeedFilter : () => !!oddsFeedFilter;
   diContainer.register({
@@ -78,6 +82,11 @@ function register<TEvent extends Event = Event>(
     registerType: "value",
     key: "eventQueueMaxLength",
     value: eventQueueMaxLength,
+  });
+  diContainer.register({
+    registerType: "value",
+    key: "shouldValidateOdds",
+    value: shouldValidateOdds,
   });
 }
 
