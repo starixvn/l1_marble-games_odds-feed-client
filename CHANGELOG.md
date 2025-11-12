@@ -1,3 +1,11 @@
+# [3.4.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.3.1...v3.4.0) (2025-11-12)
+
+
+### Features
+
+* odds and result validation - Epic GL-5337 ([e599de3](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/e599de3bc3af1274dd61fefb423663377ae41235))
+* support and use now from server - Epic GL-5337 ([f77d067](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/f77d067dfc6486e70e30ae558babaea6143d8493))
+
 ## [3.3.1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.3.0...v3.3.1) (2025-11-11)
 
 
