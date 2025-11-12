@@ -1,3 +1,10 @@
+## [3.4.1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.0...v3.4.1) (2025-11-12)
+
+
+### Bug Fixes
+
+* now in the response is STRING, not NUMBER - Epic GL-5337 ([b80ff75](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/b80ff754b0d8867a31af42468b883e160bc154f3))
+
 # [3.4.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.3.1...v3.4.0) (2025-11-12)
 
 
