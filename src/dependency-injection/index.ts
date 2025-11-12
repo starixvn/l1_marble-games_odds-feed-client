@@ -90,7 +90,15 @@ function register<TEvent extends Event = Event>(
   });
 }
 
-function init(container: DiContainer, startCurrentEvents = false) {
+const defaultInitOptions = {
+  startCurrentEvents: false,
+}
+
+function init(container: DiContainer, {
+  startCurrentEvents = false
+}: {
+  startCurrentEvents?: boolean;
+} = defaultInitOptions) {
   container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
   container.resolve<EventCleanerService>("eventCleanerService").initEvent();
   container.resolve<OddsFeedCron>("oddsFeedCron").start(startCurrentEvents);

@@ -22,8 +22,8 @@ export class SchedulerImpl implements Scheduler {
     }
   ): string {
     const now = 
-      options?.overrideNow ?
-      new Date(options.overrideNow).getTime()
+      options?.overrideNow 
+      ? new Date(options.overrideNow).getTime()
       : Date.now();
     const diff = time.getTime() - now;
     const key = options?.key ?? callback.name;
