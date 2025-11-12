@@ -18,11 +18,13 @@ export class SchedulerImpl implements Scheduler {
       key?: string;
       keyOverride?: string;
       ignorePast?: boolean;
-      overrideNow?: number;
+      overrideNow?: string;
     }
   ): string {
     const now = 
-      options?.overrideNow ?? Date.now();
+      options?.overrideNow ?
+      new Date(options.overrideNow).getTime()
+      : Date.now();
     const diff = time.getTime() - now;
     const key = options?.key ?? callback.name;
     const id = options?.keyOverride ?? this.composeKeyWithTime(key, time);

@@ -7,7 +7,7 @@ export interface Scheduler {
   schedule: (
     time: Date,
     callback: Function,
-    options?: { key?: string; keyOverride?: string; ignorePast?: boolean, overrideNow?: number }
+    options?: { key?: string; keyOverride?: string; ignorePast?: boolean, overrideNow?: string }
   ) => string;
   cancel: (id: string) => void;
   dispose: () => void;
