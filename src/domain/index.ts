@@ -8,7 +8,7 @@ export type Event = {
   productTypeKey: string;
   eventDetails: EventDetail[];
   voiceConfig?: string;
-  now?: number;
+  now?: string;
   eventConfig?: Record<string, any>;
 };
 
