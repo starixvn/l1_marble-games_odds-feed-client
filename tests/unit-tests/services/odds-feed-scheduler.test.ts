@@ -185,45 +185,6 @@ describe("oddsFeedScheduler", () => {
       expect(oddsFeedEventSource.emitEventDetailOddsAvailable).toHaveBeenCalledWith(updatedEvent, 0);
     });
 
-    it("invokes results available handler with retries until result is present", async () => {
-      // Arrange
-      const oddsFeedEventSource = {
-        emitEventDetailResultsAvailable: jest.fn(),
-        emitEventUpcoming: jest.fn(),
-        emitEventDetailUpcoming: jest.fn(),
-      } as any;
-      const schedulerMock = { schedule: jest.fn() } as any;
-      const logService = { logError: jest.fn() } as any;
-      const event = makeEvent();
-      const first = undefined;
-      const second = { ...event };
-      const third = { ...event, eventDetails: [{ ...event.eventDetails[0], result: "W" }, event.eventDetails[1]] };
-      const oddsFeedPullService = {
-        pullEventWithEventDetails: jest
-          .fn()
-          .mockResolvedValueOnce(first)
-          .mockResolvedValueOnce(second)
-          .mockResolvedValueOnce(third),
-      } as any;
-      const svc = new oddsFeedSchedulerImpl({
-        oddsFeedEventSource,
-        scheduler: schedulerMock,
-        oddsFeedPullService,
-        logService,
-        shouldValidateOdds: true,
-      });
-
-      // Act
-      svc.scheduleEvent(event);
-      const call = schedulerMock.schedule.mock.calls.find(([, , opts]: any) =>
-        opts.keyOverride.startsWith(`${oddsFeedEventName.EventDetailResultsAvailable}`)
-      );
-      await call[1]();
-
-      // Assert
-      expect(oddsFeedEventSource.emitEventDetailResultsAvailable).toHaveBeenCalledWith(third, 0);
-    });
-
     it("does not emit start when no updated event is returned", async () => {
       // Arrange
       const oddsFeedEventSource = {

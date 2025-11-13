@@ -40,6 +40,21 @@ export function oddsValidator({
     }
 }
 
+export function eventScheduleStartValidator({
+    index,
+    shouldValidate = true
+}: {
+    index: number;
+    shouldValidate?: boolean;
+}) {
+    return (event: Event) => {
+        if (!shouldValidate) {
+            return true;
+        }
+
+        return !isNullOrUndefinedOrEmpty(event.eventDetails[index].playlist) && !isNullOrUndefinedOrEmpty(event.eventDetails[index].goalInfo);
+    }
+}
 
 function isNullOrUndefinedOrEmpty(value: string | undefined | null) {
     return value === undefined || value === null || value === "";
