@@ -1,5 +1,4 @@
 import { Event as oddsFeedEvent } from "@/domain";
-import { isNullOrUndefinedOrEmpty } from "@/utils";
 import {
   OddsFeedPullService,
   Scheduler,
@@ -9,7 +8,7 @@ import {
   Logger,
   PullContext,
 } from "@/interfaces";
-import { oddsValidator, resultValidator } from "../utils/validators";
+import { eventScheduleStartValidator, oddsValidator, resultValidator } from "../utils/validators";
 
 interface OddsFeedSchedulerContainer {
   oddsFeedEventSource: OddsFeedEventSource<oddsFeedEvent>;
@@ -25,6 +24,8 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   private readonly oddsFeedPullService: OddsFeedPullService;
   private readonly logService: Logger;
   private readonly shouldValidateOdds: boolean;
+  private readonly shouldValidateEventScheduleStart: boolean = true;
+
   constructor(container: OddsFeedSchedulerContainer) {
     this.oddsFeedEventSource = container.oddsFeedEventSource;
     this.scheduler = container.scheduler;
@@ -101,10 +102,13 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   }
 
   protected async emitEventDetailStart(event: oddsFeedEvent, index: number) {
-    const updatedEvent = await this.pullEventAndUpdateStore(event);
+    const validator = eventScheduleStartValidator({ index, shouldValidate: this.shouldValidateEventScheduleStart });
+    
+    const updatedEvent = await this.pullEventAndUpdateStore(event, { validator });
     if (!updatedEvent) {
       return;
     }
+
     this.oddsFeedEventSource.emitEventDetailStart(updatedEvent, index);
   }
 
@@ -117,23 +121,11 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     this.oddsFeedEventSource.emitEventDetailOddsAvailable(updatedEvent, index);
   }
 
-  protected async emitEventDetailResultsAvailable(event: oddsFeedEvent, index: number, retry = 3) {
+  protected async emitEventDetailResultsAvailable(event: oddsFeedEvent, index: number) {
     const validator = resultValidator({ index });
     const updatedEvent = await this.pullEventAndUpdateStore(event, { validator });
-    if (retry < 0) {
-      this.logService.logError(
-        `Failed to get event details for event ${event.eventID} and index ${index} after ${retry} retries`
-      );
-      return;
-    }
 
     if (!updatedEvent) {
-      await this.emitEventDetailResultsAvailable(event, index, retry - 1);
-      return;
-    }
-
-    if (isNullOrUndefinedOrEmpty(updatedEvent.eventDetails[index].result)) {
-      await this.emitEventDetailResultsAvailable(event, index, retry - 1);
       return;
     }
 
