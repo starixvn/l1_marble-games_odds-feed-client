@@ -1,3 +1,10 @@
+## [3.4.3](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.2...v3.4.3) (2025-11-13)
+
+
+### Bug Fixes
+
+* validate event detail start ensuring playlist and goalinfo is available - Epic GL-5337 ([d2409a9](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/d2409a9b01a0560cd9d2f9f215883dd8c5721f78))
+
 ## [3.4.2](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.1...v3.4.2) (2025-11-12)
 
 
