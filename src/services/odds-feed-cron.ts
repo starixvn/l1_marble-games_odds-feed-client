@@ -19,6 +19,8 @@ export class OddsFeedCronImpl implements OddsFeedCron {
   private readonly oddsFeedPullService: OddsFeedPullService;
   private readonly oddsFeedScheduler: OddsFeedScheduler;
 
+  private readonly _latestEventIdByGame: Record<string, number> = {};
+
   public async start(startCurrentEvents = false) {
     if (startCurrentEvents) {
       await this.initializeCurrentEvents();
@@ -77,7 +79,12 @@ export class OddsFeedCronImpl implements OddsFeedCron {
   public async schedule() {
     const upcomingEvents = await this.oddsFeedPullService.pullUpcoming();
     for (const upcomingEvent of upcomingEvents) {
-      void this.scheduleEvent(upcomingEvent);
+      const gameId = idHelper.extractGameId(upcomingEvent.eventID);
+      if (!this._latestEventIdByGame[gameId] || upcomingEvent.eventID > this._latestEventIdByGame[gameId]) {
+        this._latestEventIdByGame[gameId] = upcomingEvent.eventID;
+        void this.scheduleEvent(upcomingEvent);
+      }
+ 
     }
   }
 

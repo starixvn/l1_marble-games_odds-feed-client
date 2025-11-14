@@ -11,11 +11,13 @@ import {
 } from "@/services";
 import { EventCleanerService, MarbleLoggerService, OddsFeedCron } from "@/interfaces";
 import { Event } from "@/domain";
+import { ApiLogger } from "../services/api-logger";
 
 const defaultOptions = {
   oddsFeedFilter: true,
   eventQueueMaxLength: 10,
-  shouldValidateOdds: true,
+  shouldValidateOdds: true,  
+  logApiToFile: false,
 }
 
 function register<TEvent extends Event = Event>(
@@ -24,10 +26,12 @@ function register<TEvent extends Event = Event>(
     oddsFeedFilter = true,
     eventQueueMaxLength = 10,
     shouldValidateOdds = true,
+    logApiToFile = false,
   }: {
     oddsFeedFilter?: boolean | ((event: TEvent, index: number, array: TEvent[]) => boolean);
     eventQueueMaxLength?: number;
     shouldValidateOdds?: boolean;
+    logApiToFile?: boolean;
   } = defaultOptions) {
   const normalizedoddsFeedFilter: (event: TEvent, index: number, array: TEvent[]) => boolean =
     typeof oddsFeedFilter === "function" ? oddsFeedFilter : () => !!oddsFeedFilter;
@@ -88,14 +92,26 @@ function register<TEvent extends Event = Event>(
     key: "shouldValidateOdds",
     value: shouldValidateOdds,
   });
+  diContainer.register({
+    registerType: "value",
+    key: "logApiToFile",
+    value: logApiToFile,
+  });
+
+  diContainer.register({
+    registerType: "class",
+    key: "apiLogger",
+    value: ApiLogger,
+  });
 }
 
 const defaultInitOptions = {
-  startCurrentEvents: false,
+  startCurrentEvents: false
 }
 
 function init(container: DiContainer, {
-  startCurrentEvents = false
+  startCurrentEvents = false,
+
 }: {
   startCurrentEvents?: boolean;
 } = defaultInitOptions) {

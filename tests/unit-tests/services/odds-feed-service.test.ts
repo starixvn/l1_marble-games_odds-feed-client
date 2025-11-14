@@ -11,9 +11,14 @@ describe("oddsFeedService", () => {
   let appConfigs: AppConfigs;
   let marbleLoggerService: MarbleLoggerService;
   let service: oddsFeedServiceImpl;
+  let apiLogger: {
+    logSchedule: jest.Mock;
+    logEventDetails: jest.Mock;
+    logRemoteJson: jest.Mock;
+  };
 
   beforeEach(() => {
-    (global as any).fetch = jest.fn();
+    (globalThis as any).fetch = jest.fn();
     logService = { logError: jest.fn(), log: jest.fn() };
     marbleLoggerService = {
       init: jest.fn(),
@@ -22,6 +27,11 @@ describe("oddsFeedService", () => {
       warning: jest.fn(),
       debug: jest.fn(),
     } as any;
+    apiLogger = {
+      logSchedule: jest.fn(),
+      logEventDetails: jest.fn(),
+      logRemoteJson: jest.fn(),
+    };
     appConfigs = {
       oddsFeedAPI: {
         url: "https://api.example.com",
@@ -34,14 +44,14 @@ describe("oddsFeedService", () => {
         env: "test",
       },
     };
-    service = new oddsFeedServiceImpl({ logService, appConfigs, marbleLoggerService } as any);
+    service = new oddsFeedServiceImpl({ logService, appConfigs, marbleLoggerService, apiLogger } as any);
   });
 
   describe("fetchSchedule", () => {
     it("returns schedule on success", async () => {
       // Arrange
       const events = [{ eventID: 1 }];
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(200, events));
 
@@ -52,13 +62,13 @@ describe("oddsFeedService", () => {
       expect(result).toEqual(events);
       expect(logService.logError).not.toHaveBeenCalled();
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(2);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(2);
     });
 
     it("uses default retries/delay and returns schedule", async () => {
       // Arrange
       const events = [{ eventID: 3 }];
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(200, events));
 
@@ -69,13 +79,13 @@ describe("oddsFeedService", () => {
       expect(result).toEqual(events);
       expect(logService.logError).not.toHaveBeenCalled();
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(2);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(2);
     });
 
     it("refreshes token on 401 then succeeds", async () => {
       // Arrange
       const events = [{ eventID: 2 }];
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "t1" }))
         .mockResolvedValueOnce(makeResponse(401, {}))
         .mockResolvedValueOnce(makeResponse(200, { access_token: "t2" }))
@@ -88,12 +98,12 @@ describe("oddsFeedService", () => {
       expect(result).toEqual(events);
       expect(logService.logError).not.toHaveBeenCalled();
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(4);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(4);
     });
 
     it("returns empty array and logs on non-200", async () => {
       // Arrange
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(500, {}));
 
@@ -110,7 +120,7 @@ describe("oddsFeedService", () => {
     it("returns event details on success", async () => {
       // Arrange
       const event = { eventID: 10 } as any;
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(200, event));
 
@@ -126,7 +136,7 @@ describe("oddsFeedService", () => {
     it("uses default validator/retries/delay and returns event", async () => {
       // Arrange
       const event = { eventID: 14 } as any;
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(200, event));
 
@@ -137,13 +147,13 @@ describe("oddsFeedService", () => {
       expect(result).toEqual(event);
       expect(logService.logError).not.toHaveBeenCalled();
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(2);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(2);
     });
 
     it("retries on 401 then succeeds", async () => {
       // Arrange
       const event = { eventID: 11 } as any;
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "t1" }))
         .mockResolvedValueOnce(makeResponse(401, {}))
         .mockResolvedValueOnce(makeResponse(200, { access_token: "t2" }))
@@ -156,13 +166,13 @@ describe("oddsFeedService", () => {
       expect(result).toEqual(event);
       expect(logService.logError).not.toHaveBeenCalled();
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(4);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(4);
     });
 
     it("returns null and logs when validator fails", async () => {
       // Arrange
       const badEvent = { eventID: 12 } as any;
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(200, badEvent));
       const validator = () => false;
@@ -178,7 +188,7 @@ describe("oddsFeedService", () => {
 
     it("returns null and logs on non-200", async () => {
       // Arrange
-      (global as any).fetch
+      (globalThis as any).fetch
         .mockResolvedValueOnce(makeResponse(200, { access_token: "tkn" }))
         .mockResolvedValueOnce(makeResponse(500, {}));
 
@@ -195,7 +205,7 @@ describe("oddsFeedService", () => {
     it("returns parsed json on success", async () => {
       // Arrange
       const data = { a: 1 };
-      (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
+      (globalThis as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
 
       // Act
       const result = await service.getRemoteJson<typeof data>("https://x/y", { eventId: 1 }, 1, 0);
@@ -208,7 +218,7 @@ describe("oddsFeedService", () => {
     it("uses default retries/delay and returns parsed json", async () => {
       // Arrange
       const data = { a: 2 };
-      (global as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
+      (globalThis as any).fetch.mockResolvedValueOnce(makeResponse(200, data));
 
       // Act
       const result = await service.getRemoteJson<typeof data>("https://x/z", { eventId: 2 });
@@ -216,12 +226,12 @@ describe("oddsFeedService", () => {
       // Assert
       expect(result).toEqual(data);
       expect(marbleLoggerService.error).not.toHaveBeenCalled();
-      expect((global as any).fetch).toHaveBeenCalledTimes(1);
+      expect((globalThis as any).fetch).toHaveBeenCalledTimes(1);
     });
 
     it("returns null and logs on fetch failure", async () => {
       // Arrange
-      (global as any).fetch.mockRejectedValueOnce(new Error("network"));
+      (globalThis as any).fetch.mockRejectedValueOnce(new Error("network"));
 
       // Act
       const result = await service.getRemoteJson("https://x/y", { eventId: 3 }, 1, 0);
