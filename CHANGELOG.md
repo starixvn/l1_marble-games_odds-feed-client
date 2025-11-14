@@ -1,3 +1,10 @@
+## [3.4.4](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.3...v3.4.4) (2025-11-14)
+
+
+### Bug Fixes
+
+* add randomUUID in scheduler service - Epic GL-5982 ([87338cd](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/87338cdf1ba43537066548b6748cd814cc228a3b))
+
 ## [3.4.3](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.2...v3.4.3) (2025-11-13)
 
 
