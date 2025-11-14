@@ -1,5 +1,6 @@
 import { log } from "@/utils";
 import { Scheduler } from "@/interfaces";
+import { randomUUID } from "node:crypto";
 
 interface TimedCallback {
   callback: Function;
@@ -21,13 +22,10 @@ export class SchedulerImpl implements Scheduler {
       overrideNow?: string;
     }
   ): string {
-    const now = 
-      options?.overrideNow 
-      ? new Date(options.overrideNow).getTime()
-      : Date.now();
+    const now = options?.overrideNow ? new Date(options.overrideNow).getTime() : Date.now();
     const diff = time.getTime() - now;
-    const key = options?.key ?? callback.name;
-    const id = options?.keyOverride ?? this.composeKeyWithTime(key, time);
+    const idFromKey = options?.key ? this.composeKeyWithTime(options.key, time) : `${callback.name}-${randomUUID()}`;
+    const id = options?.keyOverride ?? idFromKey;
     if (this.tasks[id]) {
       this.log(`Task ${id} already scheduled, ignoring it`);
       return id;

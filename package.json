@@ -86,7 +86,7 @@
     "semantic-release": "25.0.0",
     "ts-jest": "29.4.4",
     "ts-node": "10.9.2",
-    "tsc-alias": "^1.8.16",
+    "tsc-alias": "1.8.16",
     "typescript": "5.9.3"
   },
   "jestSonar": {
@@ -95,8 +95,8 @@
     "indent": 4
   },
   "dependencies": {
-    "@sentry/node": "^10.20.0",
-    "awilix": "^12.0.5",
-    "cron": "^4.3.3"
+    "@sentry/node": "10.20.0",
+    "awilix": "12.0.5",
+    "cron": "4.3.3"
   }
 }
