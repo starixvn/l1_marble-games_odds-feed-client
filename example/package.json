@@ -19,11 +19,7 @@
     "reg": "npm set registry http://npm.lumigame.com"
   },
   "keywords": [
-    "rng",
-    "crypto",
-    "secure",
-    "random",
-    "shuffle"
+    "example"
   ],
   "files": [
     "lib/"
