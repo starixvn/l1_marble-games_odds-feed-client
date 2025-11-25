@@ -1,7 +1,6 @@
 import { Logger } from "odds-feed-client";
 
 export class CustomLogger implements Logger {
-  public logError(message: string) {
-    console.error(message);
-  }
+  log(message: string, level: string) { return; }
+  public logError(message: string) { return; }
 }

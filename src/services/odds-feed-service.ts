@@ -1,28 +1,36 @@
 import { Event } from "@/domain";
 import { retry } from "@/utils";
 import { AppConfigs, Logger, OddsFeedService, MarbleLoggerService } from "@/interfaces";
+import { ApiLogger } from "./api-logger";
+
 
 interface OddsFeedServiceContainer {
   logService: Logger;
   appConfigs: AppConfigs;
   marbleLoggerService: MarbleLoggerService;
+  apiLogger: ApiLogger;
 }
 
 export class OddsFeedServiceImpl implements OddsFeedService {
   private readonly logService: Logger;
   private readonly appConfigs: AppConfigs;
   private readonly marbleLoggerService: MarbleLoggerService;
+  private readonly apiLogger: ApiLogger;
   private token = "";
 
   constructor(container: OddsFeedServiceContainer) {
     this.logService = container.logService;
     this.appConfigs = container.appConfigs;
     this.marbleLoggerService = container.marbleLoggerService;
+    this.apiLogger = container.apiLogger;
   }
 
   async fetchSchedule(retries = 3, delay = 1000, { eventId }: { eventId?: number } = {}): Promise<Event[]> {
     try {
-      return await retry(() => this.getSchedule(), retries, delay);
+      const data =  await retry(() => this.getSchedule(), retries, delay);
+      void this.apiLogger.logSchedule(data);
+      return data;
+
     } catch (error) {
       this.marbleLoggerService.error(error as Error, { eventId });
       return [];
@@ -36,7 +44,9 @@ export class OddsFeedServiceImpl implements OddsFeedService {
     delay = 1000
   ): Promise<Event | null> {
     try {
-      return await retry(() => this.getEventDetails(eventId, validator), retries, delay);
+      const data = await retry(() => this.getEventDetails(eventId, validator), retries, delay);
+      void this.apiLogger.logEventDetails({ event: data, eventId });
+      return data;
     } catch (error) {
       this.marbleLoggerService.error(error as Error, { eventId });
       return null;
@@ -46,7 +56,9 @@ export class OddsFeedServiceImpl implements OddsFeedService {
   async getRemoteJson<T>(url: string, annotation: { eventId?: number }, retries = 3, delay = 1000): Promise<T | null> {
     try {
       const response = await retry(() => fetch(url), retries, delay);
-      return (await response.json()) as T;
+      const data = await response.json();
+      void this.apiLogger.logRemoteJson({ url, data });
+      return data as T;
     } catch (error) {
       this.marbleLoggerService.error(error as Error, annotation);
       return null;
@@ -91,7 +103,7 @@ export class OddsFeedServiceImpl implements OddsFeedService {
     return response.json();
   }
 
-  private async getEventDetails(eventId: number, validator: (event: Event) => boolean): Promise<Event | null> {
+  private async getEventDetails(eventId: number, validator: (event: Event) => boolean): Promise<Event> {
     const token = this.token || (await this.getAndUpdateOddsFeedToken());
 
     const response = await fetch(`${this.appConfigs.oddsFeedAPI.url}/api/events?eventID=${eventId}`, {
