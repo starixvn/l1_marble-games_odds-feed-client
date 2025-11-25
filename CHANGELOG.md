@@ -1,3 +1,10 @@
+# [3.5.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.4...v3.5.0) (2025-11-25)
+
+
+### Features
+
+* dedup /event request and create api logger to support debugging and export json - Epic GL-5337 - Epic GL-5337 ([2b70081](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/2b70081e8638c8d212a1585435d2dba398dd8121))
+
 ## [3.4.4](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.3...v3.4.4) (2025-11-14)
 
 
