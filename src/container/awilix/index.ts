@@ -2,7 +2,7 @@ import { aliasTo, asClass, asFunction, asValue, AwilixContainer, InjectionMode }
 import { Constructor, DiContainer } from "@/container/core";
 
 export class AwilixDIContainer implements DiContainer {
-  private container: AwilixContainer;
+  private readonly container: AwilixContainer;
   constructor(container: AwilixContainer) {
     this.container = container;
   }

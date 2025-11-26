@@ -9,6 +9,7 @@ import {
   PullContext,
 } from "@/interfaces";
 import { eventScheduleStartValidator, oddsValidator, resultValidator } from "../utils/validators";
+import { OddsFeedStore } from "./odds-feed-store";
 
 interface OddsFeedSchedulerContainer {
   oddsFeedEventSource: OddsFeedEventSource<oddsFeedEvent>;
@@ -16,6 +17,8 @@ interface OddsFeedSchedulerContainer {
   oddsFeedPullService: OddsFeedPullService;
   logService: Logger;
   shouldValidateOdds: boolean;
+  shouldValidateEventScheduleStart: boolean;
+  oddsFeedStore: OddsFeedStore;
 }
 
 export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
@@ -23,8 +26,9 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
   private readonly scheduler: Scheduler;
   private readonly oddsFeedPullService: OddsFeedPullService;
   private readonly logService: Logger;
-  private readonly shouldValidateOdds: boolean;
-  private readonly shouldValidateEventScheduleStart: boolean = true;
+  private readonly shouldValidateOdds: boolean = false;
+  private readonly shouldValidateEventScheduleStart: boolean = false;
+  private readonly oddsFeedStore: OddsFeedStore;
 
   constructor(container: OddsFeedSchedulerContainer) {
     this.oddsFeedEventSource = container.oddsFeedEventSource;
@@ -32,6 +36,8 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     this.oddsFeedPullService = container.oddsFeedPullService;
     this.logService = container.logService;
     this.shouldValidateOdds = container.shouldValidateOdds;
+    this.shouldValidateEventScheduleStart = container.shouldValidateEventScheduleStart;
+    this.oddsFeedStore = container.oddsFeedStore;
   }
 
   public scheduleEventUpcoming(event: oddsFeedEvent) {
@@ -93,12 +99,12 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     );
   }
 
-  protected async emitEventStart(event: oddsFeedEvent) {
-    const updatedEvent = await this.pullEventAndUpdateStore(event);
+  protected emitEventStart(event: oddsFeedEvent) {
+    const updatedEvent = this.oddsFeedStore.getEvent(event.eventID);  
     if (!updatedEvent) {
       return;
     }
-    this.oddsFeedEventSource.emitEventStart(updatedEvent);
+    this.oddsFeedEventSource.emitEventStart(event);
   }
 
   protected async emitEventDetailStart(event: oddsFeedEvent, index: number) {

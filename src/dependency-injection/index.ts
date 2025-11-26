@@ -12,6 +12,7 @@ import {
 import { EventCleanerService, MarbleLoggerService, OddsFeedCron } from "@/interfaces";
 import { Event } from "@/domain";
 import { ApiLogger } from "../services/api-logger";
+import { OddsFeedStore } from "../services/odds-feed-store";
 
 const defaultOptions = {
   oddsFeedFilter: true,
@@ -102,6 +103,11 @@ function register<TEvent extends Event = Event>(
     registerType: "class",
     key: "apiLogger",
     value: ApiLogger,
+  });
+  diContainer.register({
+    registerType: "class",
+    key: "oddsFeedStore",
+    value: OddsFeedStore,
   });
 }
 

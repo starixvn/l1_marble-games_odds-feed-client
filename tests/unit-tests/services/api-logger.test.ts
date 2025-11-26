@@ -39,8 +39,8 @@ describe("ApiLogger", () => {
   });
 
   describe("logSchedule", () => {
-    it("skips file operations when writeToFile disabled", async () => {
-      const logger = new ApiLogger({ appConfigs: baseAppConfigs });
+    it("skips file operations when logApiToFile disabled", async () => {
+      const logger = new ApiLogger({ appConfigs: baseAppConfigs, logApiToFile: false });
 
       await logger.logSchedule([{ eventID: 1 } as any]);
 
@@ -54,7 +54,7 @@ describe("ApiLogger", () => {
       mockedFs.access.mockResolvedValue(undefined);
       mockedFs.writeFile.mockResolvedValue(undefined);
       const logger = new ApiLogger({
-        appConfigs: { ...baseAppConfigs, dataDir: "logs", writeToFile: true } as any,
+        appConfigs: { ...baseAppConfigs, dataDir: "logs", logApiToFile: true } as any,
       });
 
       const events = [{ eventID: 1 } as any];
@@ -78,16 +78,16 @@ describe("ApiLogger", () => {
       mockedFs.mkdir.mockResolvedValue(undefined);
       mockedFs.writeFile.mockResolvedValue(undefined);
       const logger = new ApiLogger({
-        appConfigs: { ...baseAppConfigs, dataDir: "logs", writeToFile: true } as any,
+        appConfigs: { ...baseAppConfigs, dataDir: "logs", logApiToFile: true } as any,
       });
 
       const event = { id: 10 } as any;
       await logger.logEventDetails({ event, eventId: 42 });
 
-      expect(mockedFs.access).toHaveBeenCalledWith("logs/event_details");
-      expect(mockedFs.mkdir).toHaveBeenCalledWith("logs/event_details", { recursive: true });
+      expect(mockedFs.access).toHaveBeenCalledWith("logs/event_details/42");
+      expect(mockedFs.mkdir).toHaveBeenCalledWith("logs/event_details/42", { recursive: true });
       expect(mockedFs.writeFile).toHaveBeenCalledWith(
-        "logs/event_details/42_1700000001234.json",
+        "logs/event_details/42/1700000001234.json",
         JSON.stringify(event, null, 2)
       );
 
@@ -101,7 +101,7 @@ describe("ApiLogger", () => {
       mockedFs.access.mockResolvedValue(undefined);
       mockedFs.writeFile.mockResolvedValue(undefined);
       const logger = new ApiLogger({
-        appConfigs: { ...baseAppConfigs, writeToFile: true } as any,
+        appConfigs: { ...baseAppConfigs, logApiToFile: true } as any,
       });
 
       const url = "https://example.com/foo?bar=baz";
@@ -110,7 +110,7 @@ describe("ApiLogger", () => {
       await logger.logRemoteJson({ url, data });
 
       const dir = `data/remote_json`;
-      const filename = `${toBase64Filename(url)}}.json`;
+      const filename = `${toBase64Filename(url)}`;
 
       expect(mockedFs.access).toHaveBeenCalledWith(dir);
       expect(mockedFs.writeFile).toHaveBeenCalledWith(

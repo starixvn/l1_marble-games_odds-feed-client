@@ -25,35 +25,47 @@ async function writeFileEnsurePathCreated(filePath: string, content: string) {
 
 interface ApiLoggerContainer {
     appConfigs: AppConfigs;
+    logApiToFile?: boolean;
 }
 
 export class ApiLogger {
     private readonly dataDir: string;
-    private readonly writeToFile: boolean;
+    private readonly logApiToFile: boolean;
 
     constructor(container: ApiLoggerContainer) {
         this.dataDir = (container.appConfigs as any).dataDir ?? DEFAULT_DATA_DIR;
-        this.writeToFile = (container.appConfigs as any).writeToFile ?? false;
+        this.logApiToFile = 
+            container.logApiToFile ?? 
+            (container.appConfigs as any).logApiToFile 
+            ?? false;
     }
  
     async logSchedule(events: Event[]): Promise<void> {
-        if (!this.writeToFile) {
+        if (!this.logApiToFile) {
             return;
         }
-        await writeFileEnsurePathCreated(`${this.dataDir}/schedule/${Date.now()}.json`, JSON.stringify(events, null, 2));
+        try {
+            await writeFileEnsurePathCreated(`${this.dataDir}/schedule/${Date.now()}.json`, JSON.stringify(events, null, 2));
+        } catch (error) {
+            console.error(`Failed to log schedule:`, error);
+        }
     }
 
     async logEventDetails({ event, eventId }: { event: Event, eventId: number }): Promise<void> {
-        if (!this.writeToFile) {
+        if (!this.logApiToFile) {
             return;
         }
-        await writeFileEnsurePathCreated(`${this.dataDir}/event_details/${eventId}_${Date.now()}.json`, JSON.stringify(event, null, 2));
+        try {
+            await writeFileEnsurePathCreated(`${this.dataDir}/event_details/${eventId}/${Date.now()}.json`, JSON.stringify(event, null, 2));
+        } catch (error) {
+            console.error(`Failed to log event details for event ${eventId}:`, error);
+        }
     }
 
     async logRemoteJson({ url, data }: { url: string, data: any }): Promise<void> {
-        if (!this.writeToFile) {
+        if (!this.logApiToFile) {
             return;
         }
-        await writeFileEnsurePathCreated(`${this.dataDir}/remote_json/${toBase64Filename(url)}}.json`, JSON.stringify(data, null, 2));
+        await writeFileEnsurePathCreated(`${this.dataDir}/remote_json/${toBase64Filename(url)}`, JSON.stringify(data, null, 2));
     }
 }
