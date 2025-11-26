@@ -1,3 +1,10 @@
+# [3.6.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.5.0...v3.6.0) (2025-11-26)
+
+
+### Features
+
+* pause the odds feed client - Epic GL-6394 ([a550cf1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/a550cf17e6cfc2c133aeedbb7aec7aaa00f83dc4))
+
 # [3.5.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.4.4...v3.5.0) (2025-11-25)
 
 
