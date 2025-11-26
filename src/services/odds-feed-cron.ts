@@ -15,6 +15,7 @@ export class OddsFeedCronImpl implements OddsFeedCron {
     this.oddsFeedScheduler = container.oddsFeedScheduler;
   }
 
+  private _job: cron.CronJob<() => void, null> | null = null;
   private readonly logService: Logger;
   private readonly oddsFeedPullService: OddsFeedPullService;
   private readonly oddsFeedScheduler: OddsFeedScheduler;
@@ -22,6 +23,12 @@ export class OddsFeedCronImpl implements OddsFeedCron {
   private readonly _latestEventIdByGame: Record<string, number> = {};
 
   public async start(startCurrentEvents = false) {
+
+    if (this._job) {
+      this._job?.start();
+      return;
+    }
+
     if (startCurrentEvents) {
       await this.initializeCurrentEvents();
     }
@@ -30,19 +37,20 @@ export class OddsFeedCronImpl implements OddsFeedCron {
     this.scheduleNextEventsCron();
   }
 
+  public stop() {
+    this._job?.stop();
+  }
+
   public scheduleNextEventsCron() {
+
     const cronExpression = "*/30 * * * * *";
 
-    const job = new cron.CronJob(
+    this._job = new cron.CronJob(
       cronExpression,
       () => this.schedule().catch(this.logService.logError),
-      () => {
-        this.logService.logError("Cron job unexpectedly stopped because some other tasks halt it.");
-        job.start();
-      }
     );
 
-    job.start();
+    this._job?.start();
   }
 
   async getNextEventIDsForEachGame() {
@@ -82,7 +90,7 @@ export class OddsFeedCronImpl implements OddsFeedCron {
       const gameId = idHelper.extractGameId(upcomingEvent.eventID);
       if (!this._latestEventIdByGame[gameId] || upcomingEvent.eventID > this._latestEventIdByGame[gameId]) {
         this._latestEventIdByGame[gameId] = upcomingEvent.eventID;
-        void this.scheduleEvent(upcomingEvent);
+        await this.scheduleEvent(upcomingEvent);
       }
  
     }

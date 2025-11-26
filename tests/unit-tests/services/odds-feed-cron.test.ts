@@ -64,7 +64,7 @@ describe("oddsFeedCron", () => {
   });
 
   describe("scheduleNextEventsCron", () => {
-    it("starts cron job and reschedules on stop", () => {
+    it("creates and stores cron job with onComplete set to undefined", () => {
       // Arrange
       const logService = { logError: jest.fn() } as any;
       const oddsFeedPullService = { pullUpcoming: jest.fn() } as any;
@@ -77,9 +77,44 @@ describe("oddsFeedCron", () => {
 
       // Assert
       const CronJob = (cronModule as any).CronJob as jest.Mock;
+      expect(CronJob).toHaveBeenCalledWith(
+        "*/30 * * * * *",
+        expect.any(Function)
+      );
       const instance = CronJob.mock.results[0].value;
       expect(instance.start).toHaveBeenCalled();
       expect(scheduleSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("stop", () => {
+    it("stops the stored cron job", () => {
+      // Arrange
+      const logService = { logError: jest.fn() } as any;
+      const oddsFeedPullService = { pullUpcoming: jest.fn() } as any;
+      const oddsFeedScheduler = { scheduleEvent: jest.fn() } as any;
+      const cron = new oddsFeedCronImpl({ logService, oddsFeedPullService, oddsFeedScheduler });
+      const stop = jest.fn();
+      const CronJob = (cronModule as any).CronJob as jest.Mock;
+      CronJob.mockImplementation(() => ({ start: jest.fn(), stop }));
+      cron.scheduleNextEventsCron();
+
+      // Act
+      cron.stop();
+
+      // Assert
+      expect(stop).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing when no cron job is stored", () => {
+      // Arrange
+      const logService = { logError: jest.fn() } as any;
+      const oddsFeedPullService = { pullUpcoming: jest.fn() } as any;
+      const oddsFeedScheduler = { scheduleEvent: jest.fn() } as any;
+      const cron = new oddsFeedCronImpl({ logService, oddsFeedPullService, oddsFeedScheduler });
+
+      // Act & Assert
+      expect(() => cron.stop()).not.toThrow();
     });
   });
 
