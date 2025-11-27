@@ -1,3 +1,10 @@
+# [3.7.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.6.0...v3.7.0) (2025-11-27)
+
+
+### Features
+
+* remove sentry dependencies ([822102a](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/822102a29fbb7d06e1f113359b48b3189f0aa261))
+
 # [3.6.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.5.0...v3.6.0) (2025-11-26)
 
 
