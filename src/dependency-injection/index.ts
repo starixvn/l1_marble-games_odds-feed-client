@@ -9,7 +9,7 @@ import {
   OddsFeedCronImpl,
   MarbleLoggerServiceImpl,
 } from "@/services";
-import { EventCleanerService, MarbleLoggerService, OddsFeedCron } from "@/interfaces";
+import { EventCleanerService, OddsFeedCron } from "@/interfaces";
 import { Event } from "@/domain";
 import { ApiLogger } from "../services/api-logger";
 import { OddsFeedStore } from "../services/odds-feed-store";
@@ -121,7 +121,6 @@ function init(container: DiContainer, {
 }: {
   startCurrentEvents?: boolean;
 } = defaultInitOptions) {
-  container.resolve<MarbleLoggerService>("marbleLoggerService").init({});
   container.resolve<EventCleanerService>("eventCleanerService").initEvent();
   container.resolve<OddsFeedCron>("oddsFeedCron").start(startCurrentEvents);
 }

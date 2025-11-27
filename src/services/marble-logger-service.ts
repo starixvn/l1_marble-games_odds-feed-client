@@ -1,9 +1,10 @@
-import { captureException, captureMessage, init, setTag } from "@sentry/node";
 import { idHelper } from "@/utils";
-import { MarbleLoggerService, MarbleLoggerInitConfig, MarbleLogAnnotation } from "@/interfaces/marble-logger-service";
+import { MarbleLoggerService, MarbleLogAnnotation } from "@/interfaces/marble-logger-service";
+import { Logger } from "@/interfaces";
 
 interface MarbleLoggerContainer {
   appConfigs: AppConfigs;
+  logService: Logger;
 }
 
 interface AppConfigs {
@@ -17,80 +18,40 @@ interface AppConfigs {
 }
 
 export class MarbleLoggerServiceImpl implements MarbleLoggerService {
-  private readonly _dsn: string = "";
-  private readonly _logIdentifier: string = "";
-  private readonly _env: string = "";
   private readonly _debug: boolean = false;
-  private readonly _sentry: boolean = false;
-
+  private readonly logService: Logger;
   constructor(container: MarbleLoggerContainer) {
-    this._sentry = !!container.appConfigs.sentry;
-    if (!this._sentry) {
-      return;
-    }
-    this._dsn = container.appConfigs.sentry.sentryUrl;
-    this._logIdentifier = container.appConfigs.sentry.logIdentifier;
-    this._env = container.appConfigs.sentry.env;
     this._debug = container.appConfigs.sentry.debug ?? container.appConfigs.debug ?? false;
+    this.logService = container.logService;
   }
 
-  init({ sentryRelease = "", tracesSampleRate = 1 }: MarbleLoggerInitConfig = {}) {
-    if (!this._sentry) {
-      return;
-    }
-    init({
-      dsn: this._dsn,
-      environment: this._env,
-      debug: this._debug,
-      tracesSampleRate: tracesSampleRate,
-      attachStacktrace: true,
-      release: sentryRelease,
-    });
+  init() {
+    return;
   }
 
   public log(message: string, annotation?: MarbleLogAnnotation) {
     this.developmentDebugLog(message, annotation);
-    if (!this._sentry) {
-      return;
-    }
-    this.setTagByAnnotation(annotation);
-    captureMessage(message, "log");
   }
 
   public error(error: Error, annotation?: MarbleLogAnnotation) {
     this.developmentDebugLog(error.message, annotation);
-    if (!this._sentry) {
-      return;
-    }
-    this.setTagByAnnotation(annotation);
-
-    captureException(error);
+    const gameId = annotation?.gameId ?? idHelper.extractGameId(annotation?.eventId ?? 0);
+    this.logService.logError(`${gameId}: ${error.message}`);
   }
 
   public warning(message: string, annotation?: MarbleLogAnnotation) {
     this.developmentDebugLog(message, annotation);
-    if (!this._sentry) {
-      return;
-    }
-    this.setTagByAnnotation(annotation);
-    captureMessage(message, "warning");
+    const gameId = annotation?.gameId ?? idHelper.extractGameId(annotation?.eventId ?? 0);
+    this.logService.log(`${gameId}: ${message}`, "warning");
   }
 
   public debug(message: string, annotation?: MarbleLogAnnotation) {
-    if (!this._debug || !this._sentry) {
+    if (!this._debug) {
       return;
     }
-
-    this.setTagByAnnotation(annotation);
-    captureMessage(message, "debug");
-  }
-
-  private setTagByAnnotation(annotation?: MarbleLogAnnotation) {
     const gameId = annotation?.gameId ?? idHelper.extractGameId(annotation?.eventId ?? 0);
-    const identifier = `[${gameId}][${this._logIdentifier}]`;
+    this.logService.log(`${gameId}: ${message}`, "debug");
 
-    setTag("gameId", gameId);
-    setTag("logIdentifier", identifier);
   }
 
   private developmentDebugLog(message: string, annotation?: MarbleLogAnnotation) {
