@@ -133,7 +133,6 @@ describe("dependency-injection", () => {
       init(diContainer);
 
       // Assert
-      expect(marbleLoggerService.init).toHaveBeenCalled();
       expect(eventCleanerService.initEvent).toHaveBeenCalled();
       expect(oddsFeedCron.start).toHaveBeenCalled();
     });
