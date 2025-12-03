@@ -1,3 +1,10 @@
+## [3.7.1](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.7.0...v3.7.1) (2025-12-03)
+
+
+### Bug Fixes
+
+* unreliable now by pull event at start - Epic GL-6526 ([4e10290](https://git3.nexdev.net/l1/marble-games/odds-feed-client/commit/4e10290e43ec50633d8b4d5037b28e0c935a8d78))
+
 # [3.7.0](https://git3.nexdev.net/l1/marble-games/odds-feed-client/compare/v3.6.0...v3.7.0) (2025-11-27)
 
 
