@@ -19,7 +19,9 @@ register(diContainer, {
   shouldValidateOdds: false,
 });
 registerLogServices(diContainer);
-init(diContainer);
+init(diContainer, {
+  startCurrentEvents: true
+});
 initLogServices(diContainer);
 
 // Get the oddsFeedCron instance for API control

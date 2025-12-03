@@ -25,11 +25,6 @@ describe("ApiLogger", () => {
       operatorId: "",
       password: "",
     },
-    sentry: {
-      sentryUrl: "",
-      logIdentifier: "",
-      env: "",
-    },
   } as AppConfigs;
 
   beforeEach(() => {

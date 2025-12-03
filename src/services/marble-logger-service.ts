@@ -9,19 +9,13 @@ interface MarbleLoggerContainer {
 
 interface AppConfigs {
   debug?: boolean;
-  sentry: {
-    sentryUrl: string;
-    logIdentifier: string;
-    env: string;
-    debug?: boolean;
-  };
 }
 
 export class MarbleLoggerServiceImpl implements MarbleLoggerService {
   private readonly _debug: boolean = false;
   private readonly logService: Logger;
   constructor(container: MarbleLoggerContainer) {
-    this._debug = container.appConfigs.sentry.debug ?? container.appConfigs.debug ?? false;
+    this._debug = container?.appConfigs?.debug ?? false;
     this.logService = container.logService;
   }
 
