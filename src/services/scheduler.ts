@@ -36,6 +36,12 @@ export class SchedulerImpl implements Scheduler {
     }
 
     const actualDiff = Math.max(diff, 0);
+    
+    if (actualDiff === 0) {
+      this.processCallback(callback, id)();
+      return id;
+    }
+
     const timeoutId = setTimeout(this.processCallback(callback, id), actualDiff);
     this.tasks[id] = { callback, timeoutId: timeoutId as unknown as NodeJS.Timeout };
     this.log(`Scheduled task ${id} at ${time}`);
@@ -61,7 +67,9 @@ export class SchedulerImpl implements Scheduler {
       try {
         return callback(...args);
       } finally {
-        delete this.tasks[id];
+        if (this.tasks[id]) {
+          delete this.tasks[id];
+        }
       }
     };
   }

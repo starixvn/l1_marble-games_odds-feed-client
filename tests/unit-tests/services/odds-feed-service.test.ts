@@ -38,11 +38,6 @@ describe("oddsFeedService", () => {
         operatorId: "op-1",
         password: "pwd",
       },
-      sentry: {
-        sentryUrl: "https://dsn.example/1",
-        logIdentifier: "LOGGER",
-        env: "test",
-      },
     };
     service = new oddsFeedServiceImpl({ logService, appConfigs, marbleLoggerService, apiLogger } as any);
   });

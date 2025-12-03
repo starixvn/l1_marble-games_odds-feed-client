@@ -4,13 +4,10 @@ import { Logger } from "@/interfaces";
 
 describe("MarbleLoggerService", () => {
   const makeService = (overrides?: Partial<{ debug: boolean; containerDebug: boolean }>) => {
-    const sentryConfig = {
-      sentryUrl: "https://dsn.example/1",
-      logIdentifier: "LOGGER",
-      env: "test",
-      debug: overrides?.debug,
-    };
-    const appConfigs: any = { sentry: sentryConfig, debug: overrides?.containerDebug };
+    const appConfigs: any = {};
+    if (overrides?.containerDebug !== undefined) {
+      appConfigs.debug = overrides.containerDebug;
+    }
     const mockLogService: Logger = {
       logError: jest.fn(),
       log: jest.fn(),
@@ -38,7 +35,7 @@ describe("MarbleLoggerService", () => {
   describe("log", () => {
     it("calls developmentDebugLog when debug is enabled", () => {
       // Arrange
-      const { service } = makeService({ debug: true });
+      const { service } = makeService({ containerDebug: true });
       const consoleSpy = jest.spyOn(console, "log").mockImplementation();
       const annotation = { gameId: "123", eventId: idHelper.createEventId(123, 1) };
 
@@ -46,7 +43,7 @@ describe("MarbleLoggerService", () => {
       service.log("hello", annotation);
 
       // Assert
-      expect(consoleSpy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledTimes(3);
       consoleSpy.mockRestore();
     });
 
@@ -144,7 +141,7 @@ describe("MarbleLoggerService", () => {
   describe("debug", () => {
     it("does nothing when debug disabled", () => {
       // Arrange
-      const { service, mockLogService } = makeService({ debug: false });
+      const { service, mockLogService } = makeService({ containerDebug: false });
 
       // Act
       service.debug("dbg-1");
@@ -155,7 +152,7 @@ describe("MarbleLoggerService", () => {
 
     it("calls logService.log when debug enabled via config", () => {
       // Arrange
-      const { service, mockLogService } = makeService({ debug: true });
+      const { service, mockLogService } = makeService({ containerDebug: true });
 
       // Act
       service.debug("dbg-2");
@@ -166,7 +163,7 @@ describe("MarbleLoggerService", () => {
 
     it("extracts gameId from eventId when provided", () => {
       // Arrange
-      const { service, mockLogService } = makeService({ debug: true });
+      const { service, mockLogService } = makeService({ containerDebug: true });
       const eventId = idHelper.createEventId(5, 7);
 
       // Act
@@ -178,7 +175,7 @@ describe("MarbleLoggerService", () => {
 
     it("uses provided gameId when available", () => {
       // Arrange
-      const { service, mockLogService } = makeService({ debug: true });
+      const { service, mockLogService } = makeService({ containerDebug: true });
 
       // Act
       service.debug("dbg", { gameId: "42" });

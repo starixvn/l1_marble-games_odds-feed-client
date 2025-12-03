@@ -99,12 +99,12 @@ export class OddsFeedSchedulerImpl implements OddsFeedScheduler {
     );
   }
 
-  protected emitEventStart(event: oddsFeedEvent) {
-    const updatedEvent = this.oddsFeedStore.getEvent(event.eventID);  
+  protected async emitEventStart(event: oddsFeedEvent) {
+    const updatedEvent = await this.pullEventAndUpdateStore(event); 
     if (!updatedEvent) {
       return;
     }
-    this.oddsFeedEventSource.emitEventStart(event);
+    this.oddsFeedEventSource.emitEventStart(updatedEvent);
   }
 
   protected async emitEventDetailStart(event: oddsFeedEvent, index: number) {
